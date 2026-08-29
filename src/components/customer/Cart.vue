@@ -10,7 +10,6 @@ const props = defineProps({
   location: { type: String, default: "" },
   tableNumber: { type: String, default: "" },
   note: { type: String, default: "" },
-  customerName: { type: String, default: "" },
 });
 
 const emit = defineEmits([
@@ -22,7 +21,6 @@ const emit = defineEmits([
   "update:location",
   "update:tableNumber",
   "update:note",
-  "update:customerName",
 ]);
 
 const totalQty = computed(() =>
@@ -62,7 +60,6 @@ async function submitOrder() {
 
   submitting.value = true;
   const result = await createOrder({
-    customerName: props.customerName,
     orderType: props.location,
     tableNumber: props.tableNumber,
     note: props.note,
@@ -101,14 +98,6 @@ async function submitOrder() {
       </div>
 
       <div class="order-location-box">
-        <label>نام (اختیاری):</label>
-        <input
-          type="text"
-          :value="customerName"
-          placeholder="اگر بخوای روی سفارش نوشته بشه"
-          @input="emit('update:customerName', $event.target.value)"
-        >
-
         <label>محل سفارش:</label>
         <select
           :value="location"

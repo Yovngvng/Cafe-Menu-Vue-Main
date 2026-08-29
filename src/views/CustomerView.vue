@@ -27,7 +27,6 @@ const showScrollTop = ref(false);
 const orderLocation = ref("");
 const tableNumber = ref("");
 const orderNote = ref("");
-const customerName = ref("");
 
 const cartQty = computed(() =>
   cart.value.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
@@ -94,7 +93,6 @@ function handleOrdered() {
   orderLocation.value = "";
   tableNumber.value = "";
   orderNote.value = "";
-  customerName.value = "";
 }
 
 function onScroll() {
@@ -140,7 +138,6 @@ onUnmounted(() => {
     v-model:location="orderLocation"
     v-model:table-number="tableNumber"
     v-model:note="orderNote"
-    v-model:customer-name="customerName"
     @change-qty="changeQty"
     @remove="removeFromCart"
     @clear="clearCart"

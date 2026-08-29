@@ -6,6 +6,7 @@ import { getOrders, updateOrderStatus, deleteOrder } from "../../services/orders
 import { signOutAdmin } from "../../services/auth.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { playBeep } from "../../utils/playBeep.js";
+import { extractOrderTax, productLines } from "../../utils/orderTotals.js";
 import {
   STATUS,
   STATUS_PRIORITY,
@@ -13,8 +14,9 @@ import {
   nextStatus,
   orderTimestamp,
   cafeDayKey,
-  isSameCafeDay,
+  isCafeDay,
   persianDate,
+  recentCafeDayKeys,
 } from "../../utils/orderStatus.js";
 import OrderCard from "./OrderCard.vue";
 
@@ -22,15 +24,30 @@ const router = useRouter();
 const orders = ref([]);
 const showToast = ref(false);
 const currentFilter = ref("all");
-const dateScope = ref("today");
 const clock = ref(Date.now());
+const selectedDayKey = ref(cafeDayKey(Date.now()));
 const actionMessage = ref("");
 const loading = ref(true);
 
-const visibleOrders = computed(() => {
-  if (dateScope.value !== "today") return orders.value;
-  return orders.value.filter((order) => isSameCafeDay(orderTimestamp(order), clock.value));
+const todayKey = computed(() => cafeDayKey(clock.value));
+const isTodayView = computed(() => selectedDayKey.value === todayKey.value);
+
+const reportDayOptions = computed(() => {
+  const keys = recentCafeDayKeys(90, clock.value);
+  const seen = new Set(keys);
+  orders.value.forEach((order) => {
+    const key = cafeDayKey(orderTimestamp(order));
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      keys.push(key);
+    }
+  });
+  return keys;
 });
+
+const visibleOrders = computed(() =>
+  orders.value.filter((order) => isCafeDay(orderTimestamp(order), selectedDayKey.value))
+);
 
 const todayOrders = computed(() => visibleOrders.value.length);
 
@@ -52,12 +69,34 @@ const todayIncome = computed(() =>
 
 const todayOnlyIncome = computed(() =>
   orders.value.reduce((sum, order) => {
-    if (!isSameCafeDay(orderTimestamp(order), clock.value)) return sum;
+    if (!isCafeDay(orderTimestamp(order), todayKey.value)) return sum;
     return sum + Number(order.total || 0);
   }, 0)
 );
 
 const todayLabel = computed(() => persianDate(clock.value));
+
+const dayTaxTotal = computed(() =>
+  visibleOrders.value.reduce((sum, order) => sum + extractOrderTax(order.items), 0)
+);
+
+const bestSellers = computed(() => {
+  const counts = new Map();
+  visibleOrders.value.forEach((order) => {
+    productLines(order.items).forEach((item) => {
+      const name = item.name;
+      const qty = Number(item.quantity) || 0;
+      counts.set(name, (counts.get(name) || 0) + qty);
+    });
+  });
+  return [...counts.entries()]
+    .map(([name, quantity]) => ({ name, quantity }))
+    .sort((a, b) => b.quantity - a.quantity || a.name.localeCompare(b.name, "fa"));
+});
+
+function goToday() {
+  selectedDayKey.value = todayKey.value;
+}
 
 function flashAction(text) {
   actionMessage.value = text;
@@ -160,6 +199,9 @@ onMounted(async () => {
     clock.value = Date.now();
     const nextDayKey = cafeDayKey(clock.value);
     if (nextDayKey !== lastDayKey) {
+      if (selectedDayKey.value === lastDayKey) {
+        selectedDayKey.value = nextDayKey;
+      }
       lastDayKey = nextDayKey;
       await loadOrders();
     }
@@ -211,18 +253,19 @@ onUnmounted(() => {
       <button
         type="button"
         class="filter-btn"
-        :class="{ active: dateScope === 'today' }"
-        @click="dateScope = 'today'"
+        :class="{ active: isTodayView }"
+        @click="goToday"
       >فقط امروز</button>
-      <button
-        type="button"
-        class="filter-btn"
-        :class="{ active: dateScope === 'all' }"
-        @click="dateScope = 'all'"
-      >همه سفارش‌ها</button>
+      <label class="report-date-label">
+        گزارش روز
+        <select v-model="selectedDayKey" class="report-date-select">
+          <option v-for="key in reportDayOptions" :key="key" :value="key">{{ key }}</option>
+        </select>
+      </label>
     </div>
 
     <h1>مدیریت سفارش ها</h1>
+    <p v-if="!isTodayView" class="report-heading">گزارش {{ selectedDayKey }}</p>
     <p v-if="actionMessage" class="msg-error">{{ actionMessage }}</p>
     <p v-if="loading" class="admin-loading">در حال بارگذاری...</p>
 
@@ -251,7 +294,23 @@ onUnmounted(() => {
         <h3>تحویل شده ✅</h3>
         <span>{{ doneOrders }}</span>
       </div>
+
+      <div v-if="dayTaxTotal" class="dashboard-card">
+        <h3>مالیات روز</h3>
+        <span>{{ formatPrice(dayTaxTotal) }}</span>
+      </div>
     </div>
+
+    <section class="sales-report">
+      <h2>پرفروش‌های {{ selectedDayKey }}</h2>
+      <p v-if="bestSellers.length === 0" class="admin-loading">برای این روز سفارشی ثبت نشده.</p>
+      <ol v-else class="best-seller-list">
+        <li v-for="item in bestSellers" :key="item.name">
+          <span>{{ item.name }}</span>
+          <strong>{{ item.quantity }} عدد</strong>
+        </li>
+      </ol>
+    </section>
 
     <button id="clearDoneOrders" @click="clearDoneOrders">حذف سفارش های تحویل داده شده</button>
 

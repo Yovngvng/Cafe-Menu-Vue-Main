@@ -35,7 +35,6 @@ export function normalizeOrder(row) {
 }
 
 export async function createOrder({
-  customerName,
   orderType,
   tableNumber,
   note,
@@ -44,7 +43,7 @@ export async function createOrder({
   tax = 0,
 }) {
   const payload = {
-    customer_name: customerName || null,
+    customer_name: null,
     order_type: orderType,
     table_number: tableNumber || null,
     note: note || null,

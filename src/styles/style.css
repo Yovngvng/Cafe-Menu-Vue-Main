@@ -513,6 +513,66 @@ input {
 
 .admin-filters.date-scope {
     margin: 0 0 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.report-date-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #d7e3f7;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.report-date-select {
+    background: #13284a;
+    color: #f7e5b5;
+    border: 1px solid rgba(201, 160, 61, 0.45);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-weight: 800;
+}
+
+.report-heading {
+    text-align: center;
+    color: var(--accent-2);
+    font-weight: 800;
+    margin: 0 0 12px;
+}
+
+.sales-report {
+    background: #13284a;
+    border: 1px solid rgba(201, 160, 61, 0.25);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin: 8px 0 16px;
+}
+
+.sales-report h2 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: #f7e5b5;
+}
+
+.best-seller-list {
+    margin: 0;
+    padding: 0 18px 0 0;
+}
+
+.best-seller-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #d7e3f7;
+}
+
+.best-seller-list li strong {
+    color: var(--accent);
 }
 
 .filter-btn {

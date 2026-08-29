@@ -73,3 +73,22 @@ export function isSameLocalDay(timestamp, now = Date.now()) {
 export function persianDate(now = Date.now()) {
   return cafeDayKey(now);
 }
+
+export function isCafeDay(timestamp, dayKey) {
+  if (!timestamp || !dayKey) return false;
+  return cafeDayKey(Number(timestamp)) === dayKey;
+}
+
+/** Recent Jalali cafe days in Tehran, newest first (today at index 0). */
+export function recentCafeDayKeys(days = 90, now = Date.now()) {
+  const keys = [];
+  const seen = new Set();
+  const step = 24 * 60 * 60 * 1000;
+  for (let i = 0; i < days; i++) {
+    const key = cafeDayKey(now - i * step);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    keys.push(key);
+  }
+  return keys;
+}
