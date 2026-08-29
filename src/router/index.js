@@ -6,7 +6,7 @@ import Admin from "../components/admin/Admin.vue";
 import AdminLogin from "../components/admin/AdminLogin.vue";
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
