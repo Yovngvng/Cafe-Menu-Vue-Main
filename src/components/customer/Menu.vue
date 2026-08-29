@@ -13,6 +13,7 @@ const props = defineProps({
 const emit = defineEmits(["add"]);
 
 const navRef = ref(null);
+const featuredTrack = ref(null);
 const activeCategoryName = ref(props.menu[0]?.category || "");
 const featuredItems = getFeaturedItems(props.menu);
 
@@ -49,6 +50,14 @@ function selectCategory(category) {
     const btn = navRef.value?.querySelector("button.active");
     btn?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   });
+}
+
+function scrollFeatured(direction) {
+  const track = featuredTrack.value;
+  if (!track) return;
+  const card = track.querySelector(".featured-card");
+  const step = (card?.offsetWidth || 140) + 14;
+  track.scrollBy({ left: direction * step, behavior: "smooth" });
 }
 
 function openProduct(item) {
@@ -98,17 +107,35 @@ async function addProduct() {
 
   <div v-if="featuredItems.length" class="featured-section">
     <h2 class="featured-title">ویژه های کافه ژوان</h2>
-    <div class="featured-items-container">
-      <div
-        v-for="item in featuredItems"
-        :key="item.name"
-        class="featured-card"
-        @click="openProduct(item)"
+    <div class="featured-scroller">
+      <button
+        type="button"
+        class="featured-arrow featured-arrow-left"
+        aria-label="اسکرول به چپ"
+        @click="scrollFeatured(-1)"
       >
-        <img v-if="item.image" :src="item.image" :alt="item.name">
-        <div class="feature-name">{{ item.name }}</div>
-        <div class="feature-price">{{ formatItemListPrice(item) }}</div>
+        ‹
+      </button>
+      <div ref="featuredTrack" class="featured-items-container">
+        <div
+          v-for="item in featuredItems"
+          :key="item.name"
+          class="featured-card"
+          @click="openProduct(item)"
+        >
+          <img v-if="item.image" :src="item.image" :alt="item.name">
+          <div class="feature-name">{{ item.name }}</div>
+          <div class="feature-price">{{ formatItemListPrice(item) }}</div>
+        </div>
       </div>
+      <button
+        type="button"
+        class="featured-arrow featured-arrow-right"
+        aria-label="اسکرول به راست"
+        @click="scrollFeatured(1)"
+      >
+        ›
+      </button>
     </div>
   </div>
 
