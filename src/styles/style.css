@@ -93,12 +93,15 @@ input {
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
-    padding: 8px 14px;
+    padding: 10px 16px;
+    min-height: 44px;
     border-radius: 999px;
     cursor: pointer;
     white-space: nowrap;
     transition: 0.2s ease;
     flex: 0 0 auto;
+    font-family: inherit;
+    font-size: 14px;
 }
 
 .category-nav button:hover {
@@ -897,7 +900,8 @@ input {
     }
 
     .category-nav button {
-        padding: 8px 12px;
+        padding: 10px 14px;
+        min-height: 44px;
         font-size: 13px;
     }
 

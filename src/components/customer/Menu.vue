@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, nextTick } from "vue";
 import { getFeaturedItems, formatItemListPrice, buildCartLine } from "../../data/menuUtils.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { useRatings } from "../../composables/useRatings.js";
@@ -13,7 +13,7 @@ const props = defineProps({
 const emit = defineEmits(["add"]);
 
 const navRef = ref(null);
-const activeCategory = ref(props.menu[0].category);
+const activeCategoryName = ref(props.menu[0]?.category || "");
 const featuredItems = getFeaturedItems(props.menu);
 
 const selectedProduct = ref(null);
@@ -22,6 +22,10 @@ const toppingSelected = ref(false);
 const adding = ref(false);
 
 const { loadRatings } = useRatings();
+
+const activeCategory = computed(
+  () => props.menu.find((category) => category.category === activeCategoryName.value) || props.menu[0]
+);
 
 const selectedSize = computed(() => {
   const sizes = selectedProduct.value?.sizes;
@@ -38,6 +42,14 @@ const modalPrice = computed(() => {
   });
   return line.price;
 });
+
+function selectCategory(category) {
+  activeCategoryName.value = category;
+  nextTick(() => {
+    const btn = navRef.value?.querySelector("button.active");
+    btn?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  });
+}
 
 function openProduct(item) {
   selectedProduct.value = item;
@@ -65,70 +77,18 @@ async function addProduct() {
   adding.value = false;
   closeProduct();
 }
-
-function scrollToSection(index, category) {
-  activeCategory.value = category;
-  const section = document.getElementById("section-" + index);
-  if (!section) return;
-  const navH = navRef.value?.offsetHeight || 0;
-  const top = section.getBoundingClientRect().top + window.pageYOffset - navH - 8;
-  window.scrollTo({ top, behavior: "smooth" });
-}
-
-let itemObserver;
-let sectionObserver;
-
-function setupObservers() {
-  itemObserver?.disconnect();
-  sectionObserver?.disconnect();
-
-  itemObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) entry.target.classList.add("show");
-      });
-    },
-    { threshold: 0.12 }
-  );
-  document.querySelectorAll(".menu-item-row").forEach((el) => itemObserver.observe(el));
-
-  const navButtons = navRef.value?.querySelectorAll("button") || [];
-  sectionObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        const index = Number(entry.target.dataset.index);
-        const cat = props.menu[index]?.category;
-        if (cat) activeCategory.value = cat;
-        const btn = navButtons[index];
-        if (btn) {
-          btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-        }
-      });
-    },
-    { rootMargin: "-20% 0px -60% 0px", threshold: 0 }
-  );
-  document.querySelectorAll(".menu-section").forEach((el) => sectionObserver.observe(el));
-}
-
-onMounted(async () => {
-  await nextTick();
-  setupObservers();
-});
-
-onUnmounted(() => {
-  itemObserver?.disconnect();
-  sectionObserver?.disconnect();
-});
 </script>
 
 <template>
-  <nav ref="navRef" class="category-nav">
+  <nav ref="navRef" class="category-nav" role="tablist" aria-label="دسته‌بندی منو">
     <button
-      v-for="(category, index) in menu"
+      v-for="category in menu"
       :key="category.category"
-      @click="scrollToSection(index, category.category)"
-      :class="{ active: activeCategory === category.category }"
+      type="button"
+      role="tab"
+      :aria-selected="activeCategoryName === category.category"
+      :class="{ active: activeCategoryName === category.category }"
+      @click="selectCategory(category.category)"
     >
       {{ category.category }}
     </button>
@@ -153,17 +113,11 @@ onUnmounted(() => {
   </div>
 
   <div class="menu-list">
-    <section
-      v-for="(category, index) in menu"
-      :id="'section-' + index"
-      :key="category.category"
-      class="menu-section"
-      :data-index="index"
-    >
-      <h2>{{ category.category }}</h2>
+    <section v-if="activeCategory" class="menu-section">
+      <h2>{{ activeCategory.category }}</h2>
       <div
-        class="menu-item-row"
-        v-for="item in category.items"
+        class="menu-item-row show"
+        v-for="item in activeCategory.items"
         :key="item.name"
         @click="openProduct(item)"
       >
