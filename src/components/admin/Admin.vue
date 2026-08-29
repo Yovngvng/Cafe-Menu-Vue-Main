@@ -28,6 +28,7 @@ const clock = ref(Date.now());
 const selectedDayKey = ref(cafeDayKey(Date.now()));
 const actionMessage = ref("");
 const loading = ref(true);
+const showBestSellers = ref(false);
 
 const todayKey = computed(() => cafeDayKey(clock.value));
 const isTodayView = computed(() => selectedDayKey.value === todayKey.value);
@@ -96,6 +97,16 @@ const bestSellers = computed(() => {
 
 function goToday() {
   selectedDayKey.value = todayKey.value;
+}
+
+function closeBestSellers() {
+  showBestSellers.value = false;
+}
+
+function onAdminKeydown(event) {
+  if (event.key === "Escape" && showBestSellers.value) {
+    closeBestSellers();
+  }
 }
 
 function flashAction(text) {
@@ -192,6 +203,7 @@ let channel;
 let clockTimer;
 
 onMounted(async () => {
+  window.addEventListener("keydown", onAdminKeydown);
   await loadOrders();
   loading.value = false;
   let lastDayKey = cafeDayKey(clock.value);
@@ -227,6 +239,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener("keydown", onAdminKeydown);
   if (channel) {
     supabase.removeChannel(channel);
   }
@@ -301,16 +314,9 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <section class="sales-report">
-      <h2>پرفروش‌های {{ selectedDayKey }}</h2>
-      <p v-if="bestSellers.length === 0" class="admin-loading">برای این روز سفارشی ثبت نشده.</p>
-      <ol v-else class="best-seller-list">
-        <li v-for="item in bestSellers" :key="item.name">
-          <span>{{ item.name }}</span>
-          <strong>{{ item.quantity }} عدد</strong>
-        </li>
-      </ol>
-    </section>
+    <button type="button" class="best-sellers-btn" @click="showBestSellers = true">
+      مشاهده پر فروش‌ها
+    </button>
 
     <button id="clearDoneOrders" @click="clearDoneOrders">حذف سفارش های تحویل داده شده</button>
 
@@ -358,5 +364,23 @@ onUnmounted(() => {
       @change-status="changeStatus"
       @delete="handleDelete"
     />
+
+    <div
+      v-if="showBestSellers"
+      class="modal"
+      @click.self="closeBestSellers"
+    >
+      <div class="modal-content best-sellers-modal" @click.stop>
+        <button type="button" class="close-btn" @click="closeBestSellers">بستن ✕</button>
+        <h2>پرفروش‌های {{ selectedDayKey }}</h2>
+        <p v-if="bestSellers.length === 0" class="admin-loading">برای این روز سفارشی ثبت نشده.</p>
+        <ol v-else class="best-seller-list">
+          <li v-for="item in bestSellers" :key="item.name">
+            <span>{{ item.name }}</span>
+            <strong>{{ item.quantity }} عدد</strong>
+          </li>
+        </ol>
+      </div>
+    </div>
   </div>
 </template>
