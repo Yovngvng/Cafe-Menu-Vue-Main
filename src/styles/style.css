@@ -1260,6 +1260,18 @@ input {
     position: relative;
     display: flex;
     align-items: center;
+    direction: ltr;
+}
+
+.featured-items-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 14px;
+    padding: 8px 48px 12px;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    direction: rtl;
 }
 
 .featured-items-container {
@@ -1300,10 +1312,12 @@ input {
 
 .featured-arrow-left {
     left: 4px;
+    right: auto;
 }
 
 .featured-arrow-right {
     right: 4px;
+    left: auto;
 }
 
 .featured-arrow:hover,
