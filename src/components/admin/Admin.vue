@@ -371,7 +371,15 @@ onUnmounted(() => {
       @click.self="closeBestSellers"
     >
       <div class="modal-content best-sellers-modal" @click.stop>
-        <button type="button" class="close-btn" @click="closeBestSellers">بستن ✕</button>
+        <button
+          type="button"
+          class="best-sellers-close"
+          aria-label="بستن"
+          title="بستن"
+          @click="closeBestSellers"
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
         <h2>پرفروش‌های {{ selectedDayKey }}</h2>
         <p v-if="bestSellers.length === 0" class="admin-loading">برای این روز سفارشی ثبت نشده.</p>
         <ol v-else class="best-seller-list">
