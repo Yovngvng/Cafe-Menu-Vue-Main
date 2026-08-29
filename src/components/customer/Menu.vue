@@ -57,7 +57,9 @@ function scrollFeatured(direction) {
   if (!track) return;
   const card = track.querySelector(".featured-card");
   const step = (card?.offsetWidth || 140) + 14;
-  track.scrollBy({ left: direction * step, behavior: "smooth" });
+  const rtl = getComputedStyle(track).direction === "rtl" || document.documentElement.dir === "rtl";
+  const delta = (rtl ? -direction : direction) * step;
+  track.scrollBy({ left: delta, behavior: "smooth" });
 }
 
 function openProduct(item) {
