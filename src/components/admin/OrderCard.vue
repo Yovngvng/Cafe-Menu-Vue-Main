@@ -6,6 +6,7 @@ import { canonicalStatus, nextStatus, nextStatusLabel, STATUS, orderTimestamp } 
 
 const props = defineProps({
   order: { type: Object, required: true },
+  dailyNumber: { type: Number, default: null },
 });
 
 defineEmits(["change-status", "delete"]);
@@ -14,7 +15,10 @@ const status = computed(() => canonicalStatus(props.order.status));
 const isFinal = computed(() => status.value === STATUS.DONE);
 const nextLabel = computed(() => nextStatusLabel(status.value));
 const hasNext = computed(() => !!nextStatus(status.value));
-const displayId = computed(() => props.order.order_number || String(props.order.id || "").slice(0, 8));
+const displayId = computed(() => {
+  if (props.dailyNumber != null) return props.dailyNumber.toLocaleString("fa-IR");
+  return "—";
+});
 const items = computed(() => productLines(props.order.items));
 const taxAmount = computed(() => extractOrderTax(props.order.items));
 

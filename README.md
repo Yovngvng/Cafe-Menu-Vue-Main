@@ -1,111 +1,142 @@
-# کافه ژوان — سیستم منوی دیجیتال و مدیریت سفارش
+# کافه ژوان
 
-سیستم کامل سفارش‌گیری آنلاین برای یک کافه‌ی واقعی — ساخته‌شده با **Vue 3 (Composition API)**، **Vite**، و **Supabase** به‌عنوان بک‌اند.
+سیستم منوی دیجیتال و مدیریت سفارش برای کافه ژوان، ساخته‌شده با **Vue 3** و **Supabase**.
+
+مشتری از روی میز (با QR) منو را می‌بیند و سفارش می‌دهد؛ آشپزخانه سفارش را زنده روی پنل ادمین می‌گیرد.
+
+---
 
 ## قابلیت‌ها
 
-### برای مشتری
-- منوی دیجیتال با ۱۳ دسته‌بندی و بیش از ۱۵۰ آیتم، شامل عکس و توضیحات برای محصولات ویژه
-- جست‌وجوی زنده‌ی محصولات
-- بخش «محصولات ویژه»
-- تشخیص خودکار شماره‌ی میز از روی QR کد (بدون نیاز به وارد کردن دستی)
-- سبد خرید با ذخیره‌سازی موقت (`sessionStorage`) — با هر مشتری جدید خودکار خالی می‌شه
-- انتخاب محل سفارش (سالن / فضای باز / بیرون‌بر) و یادداشت سفارش
-- سیستم امتیازدهی ۵ ستاره‌ی محصولات — فقط برای مشتریانی که واقعاً همون محصول رو سفارش داده باشن
-
-### برای مدیر کافه (`/admin`)
-- ورود با **Supabase Auth** (ایمیل / رمز) — بدون رمز هاردکد در فرانت
-- خروج از حساب
-- داشبورد آمار لحظه‌ای (تعداد سفارش، فروش، در انتظار، آماده، تحویل‌شده)
-- بروزرسانی زنده‌ی لیست سفارش‌ها (Supabase Realtime) — بدون نیاز به رفرش صفحه
-- هشدار (toast + بوق) برای سفارش تازه‌رسیده
-- صف سفارش‌ها با اولویت‌بندی FIFO (اول‌اومده اول‌سرو)
-- هایلایت بصری برای سفارش‌های بیش از ۱۰ دقیقه معطل‌مونده
-- چرخه‌ی وضعیت سفارش: در انتظار -> آماده شد -> تحویل داده شد
-- فیلتر وضعیت سفارش‌ها
-- نوار تاریخ شمسی و درآمد امروز
-- حذف تکی سفارش، یا پاک‌سازی گروهی سفارش‌های تحویل‌داده‌شده
-
-## تکنولوژی‌ها
-
-| بخش | ابزار |
+| بخش | توضیح |
 |---|---|
-| فرانت‌اند | Vue 3 (Composition API + script setup) |
-| Build Tool | Vite |
-| مدیریت مسیر | Vue Router |
-| بک‌اند / دیتابیس | Supabase (PostgreSQL + Realtime) |
-| استایل | CSS خالص، ریسپانسیو |
+| منوی مشتری | دسته‌بندی تب‌دار، جستجو، محصولات ویژه |
+| سفارش | انتخاب سایز، افزودنی ساندویچ (قارچ و پنیر)، سبد خرید |
+| مالیات | ۱۰٪ برای جمع جزء بالای ۲۰۰ هزار تومان |
+| QR میز | لینک مستقیم به میز سالن یا فضای باز |
+| ادمین | ورود با Supabase Auth، سفارش زنده، فیلتر وضعیت، بوق سفارش جدید |
+| گزارش | درآمد امروز، گزارش روز شمسی، پرفروش‌ها در مودال |
+| امتیاز | امتیاز ۵ ستاره فقط بعد از سفارش همان محصول |
+| Keep-alive | بیدار نگه داشتن پروژه رایگان Supabase (GitHub Actions + تابع Vercel) |
 
-## معماری پروژه
+---
 
-```
-src/
-├── components/
-│   ├── customer/     کامپوننت‌های سمت مشتری (منو، سبد خرید، ستاره، جستجو)
-│   └── admin/         کامپوننت‌های پنل مدیریت
-├── views/              صفحات اصلی (مشتری / ادمین)
-├── data/               دیتای منو + توابع کمکی
-├── services/           supabase client, orders, ratings, auth
-├── composables/        منطق قابل‌استفاده‌ی مجدد (امتیازدهی)
-└── styles/             فایل استایل مرکزی
-```
+## تکنولوژی
 
-## اجرای محلی
+| لایه | ابزار |
+|---|---|
+| فرانت | Vue 3 (Composition API) + Vite |
+| بک‌اند | Supabase (Auth، PostgreSQL، Realtime، RLS) |
+| میزبانی | GitHub Pages |
+| CI/CD | GitHub Actions (بیلد و دیپلوی) |
+| Keep-alive | GitHub Actions زمان‌بندی‌شده + `api/keepalive.js` روی Vercel |
+
+---
+
+## شروع کار
 
 ```bash
+git clone https://github.com/Yovngvng/Cafe-Menu-Vue-Main.git
+cd Cafe-Menu-Vue-Main
 npm install
 cp .env.example .env
+```
+
+در `.env` این دو مقدار را از داشبورد Supabase بگذارید:
+
+```env
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_KEY=YOUR_SUPABASE_ANON_KEY
+```
+
+سپس:
+
+```bash
 npm run dev
 ```
 
-برای ساخت نسخه‌ی نهایی:
+منوی مشتری روی مسیر ریشه است. پنل ادمین: `/admin` (بعد از ورود).
+
+---
+
+## دیپلوی روی GitHub Pages
+
+هر پوش روی `main` ورک‌فلو `.github/workflows/deploy.yml` را اجرا می‌کند: `npm ci`، ساخت `.env` از Secrets، `npm run build`، و دیپلوی پوشه `dist` تولیدی.
+
+**Secrets لازم** (Settings → Secrets and variables → Actions):
+
+| Secret | مقدار |
+|---|---|
+| `SUPABASE_URL` | آدرس پروژه Supabase |
+| `SUPABASE_ANON_KEY` | کلید anon |
+
+**فعال‌سازی Pages:** Settings → Pages → Source را روی **GitHub Actions** بگذارید (نه Deploy from a branch).
+
+آدرس پیش‌فرض سایت:
+
+`https://yovngvng.github.io/Cafe-Menu-Vue-Main/`
+
+`vite.config.js` مقدار `base` را `/Cafe-Menu-Vue-Main/` می‌گذارد تا مسیر دارایی‌ها درست باشد.
+
+---
+
+## راه‌اندازی Supabase
+
+در SQL Editor به این ترتیب اجرا کنید:
+
+1. `supabase/01_orders_schema.sql` — جدول سفارش و ستون‌های رابطه‌ای
+2. `supabase/rls_policies.sql` — سیاست‌های RLS (همان محتوای `02_rls_policies.sql`)
+3. `supabase/keepalive.sql` — تابع RPC برای بیدارماندن
+
+سپس:
+
+1. Authentication → Users → یک کاربر ادمین بسازید (ایمیل / رمز).
+2. Authentication → Providers → Email را روشن کنید.
+3. Authentication → Providers / Settings → ثبت‌نام عمومی را **خاموش** کنید تا فقط ادمین ساخته‌شده وارد شود.
+4. Database → Replication: جدول `orders` را در Realtime فعال کنید.
+
+---
+
+## تولید QR میز
+
 ```bash
-npm run build
+npm run qr
 ```
 
-## دیپلوی
+خروجی در پوشه `qr-codes/` است (مثلاً `salon-table-1.png` و `outdoor-table-3.png`). زیر هر QR نوشته می‌شود: نام کافه، شماره میز، نوع محل.
 
-پروژه برای دیپلوی روی Vercel یا Netlify آماده‌ست (فایل‌های vercel.json و public/_redirects برای مسیریابی درست SPA از قبل تنظیم شدن).
+آدرس پایه را می‌توانید عوض کنید:
 
-## راه‌اندازی Supabase (اجباری برای نسخه‌ی امن)
+```bash
+# Windows (PowerShell)
+$env:QR_BASE_URL="https://yovngvng.github.io/Cafe-Menu-Vue-Main/"; npm run qr
+```
 
-ترتیب اجرا در **SQL Editor**:
+میزها به‌صورت پیش‌فرض ۱ تا ۵ و دو محل **سالن** و **فضای باز** هستند؛ در `scripts/generate-qr.js` قابل تغییر است.
 
-1. `supabase/01_orders_schema.sql` — ستون‌های رابطه‌ای، مهاجرت از JSON قدیمی `data`، حذف ستون `data`
-2. `supabase/rls_policies.sql` (همان `02_rls_policies.sql`) — RLS
-3. `supabase/keepalive.sql` — RPC بیدارماندن (اختیاری ولی توصیه‌شده)
+لینک نمونه: `/?table=1` و `/?table=1&location=outdoor`
 
-### Auth ادمین
+---
 
-1. Authentication → Providers → **Email** را روشن کنید.
-2. **Allow new users to sign up** را خاموش کنید تا مشتری نتواند از لاگین ادمین حساب بسازد.
-3. Authentication → Users → **Add user** با ایمیل و رمز مدیر کافه (Confirm email اگر لازم است دستی تأیید شود).
-4. فقط همین کاربر باید بتواند `/admin` را ببیند. Route گارد جلوی کاربر مهمان را می‌گیرد؛ RLS جلوی anon برای خواندن/حذف سفارش را می‌گیرد.
+## ساختار پوشه‌ها
 
-### Realtime
+```
+api/                    تابع keep-alive برای Vercel
+public/                 تصاویر منو و _redirects
+scripts/generate-qr.js  تولید تصویر QR میزها
+src/
+  components/customer/  منو، سبد، جستجو، امتیاز
+  components/admin/     داشبورد و کارت سفارش
+  data/                 منو و توابع کمکی
+  services/             Supabase، سفارش، امتیاز، ورود
+  utils/                قیمت، وضعیت، مالیات، تاریخ شمسی
+  views/                صفحه مشتری
+supabase/               اسکریپت‌های SQL
+.github/workflows/      دیپلوی Pages و keep-alive
+```
 
-Database → Replication: جدول `orders` باید در publication باشد. اسکریپت RLS سعی می‌کند `supabase_realtime` را آپدیت کند.
+---
 
-### نکته‌ی امنیتی
+## مجوز
 
-Anon key هنوز در باندل فرانت دیده می‌شود؛ این عادی است. امنیت واقعی از **RLS + Auth** است: مشتری فقط INSERT سفارش با وضعیت `در انتظار` دارد و نمی‌تواند UPDATE/DELETE/SELECT روی `orders` بزند.
-
-## بیدار نگه داشتن Supabase (free-tier pause)
-
-پروژه‌ی رایگان Supabase بعد از بی‌استفاده ماندن pause می‌شه. فرانت‌اند وقتی هیچ مشتری‌ای سایت را باز نکرده نمی‌تواند ping بزند. یکی از این روش‌ها را راه‌اندازی کنید (هر ۶ ساعت کافی است):
-
-### 1) GitHub Actions (پیشنهادی)
-
-1. در SQL Editor سوپابیس فایل `supabase/keepalive.sql` را اجرا کنید تا RPC `keepalive` ساخته شود.
-2. در ریپو، Secrets بگذارید: `SUPABASE_URL` و `SUPABASE_ANON_KEY`.
-3. ورک‌فلو `.github/workflows/supabase-keepalive.yml` هر ۶ ساعت `POST /rest/v1/rpc/keepalive` می‌زند (بعد از RLS دیگر نمی‌شود با anon جدول `orders` را خواند).
-
-### 2) UptimeRobot (یا هر cron خارجی)
-
-- نوع: HTTP(s)
-- فاصله: هر ۵–۱۰ دقیقه (یا حداکثر هر ۶ ساعت)
-- URL اگر روی Vercel دیپلوی کردید: `https://YOUR_DOMAIN/api/keepalive`
-- یا مستقیم: `POST https://YOUR_PROJECT.supabase.co/rest/v1/rpc/keepalive` با هدرهای `apikey` و `Authorization: Bearer ANON_KEY`
-
-تابع `api/keepalive.js` برای Vercel فقط RPC `keepalive` را صدا می‌زند. Env های `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` را در Vercel ست کنید.
-
+این پروژه تحت مجوز [MIT](LICENSE) منتشر شده است.

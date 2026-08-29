@@ -92,3 +92,30 @@ export function recentCafeDayKeys(days = 90, now = Date.now()) {
   }
   return keys;
 }
+
+/**
+ * Daily sequence per Jalali cafe day in Asia/Tehran.
+ * First order of the day is 1, independent of global order_number / id.
+ */
+export function dailyOrderNumbers(orders) {
+  const groups = new Map();
+  (orders || []).forEach((order) => {
+    const key = cafeDayKey(orderTimestamp(order));
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(order);
+  });
+
+  const numbers = {};
+  groups.forEach((list) => {
+    list.sort((a, b) => {
+      const ta = orderTimestamp(a);
+      const tb = orderTimestamp(b);
+      if (ta !== tb) return ta - tb;
+      return String(a.id).localeCompare(String(b.id));
+    });
+    list.forEach((order, index) => {
+      numbers[order.id] = index + 1;
+    });
+  });
+  return numbers;
+}

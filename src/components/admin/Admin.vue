@@ -17,6 +17,7 @@ import {
   isCafeDay,
   persianDate,
   recentCafeDayKeys,
+  dailyOrderNumbers,
 } from "../../utils/orderStatus.js";
 import OrderCard from "./OrderCard.vue";
 
@@ -76,6 +77,8 @@ const todayOnlyIncome = computed(() =>
 );
 
 const todayLabel = computed(() => persianDate(clock.value));
+
+const dailyNumbers = computed(() => dailyOrderNumbers(orders.value));
 
 const dayTaxTotal = computed(() =>
   visibleOrders.value.reduce((sum, order) => sum + extractOrderTax(order.items), 0)
@@ -325,6 +328,7 @@ onUnmounted(() => {
       v-for="order in latestThree"
       :key="order.id"
       :order="order"
+      :daily-number="dailyNumbers[order.id]"
       @change-status="changeStatus"
       @delete="handleDelete"
     />
@@ -361,6 +365,7 @@ onUnmounted(() => {
       v-for="order in otherOrders"
       :key="order.id"
       :order="order"
+      :daily-number="dailyNumbers[order.id]"
       @change-status="changeStatus"
       @delete="handleDelete"
     />
