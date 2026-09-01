@@ -20,6 +20,8 @@ import {
   dailyOrderNumbers,
 } from "../../utils/orderStatus.js";
 import OrderCard from "./OrderCard.vue";
+import DailyStock from "./DailyStock.vue";
+import PriceManager from "./PriceManager.vue";
 
 const router = useRouter();
 const orders = ref([]);
@@ -30,6 +32,7 @@ const selectedDayKey = ref(cafeDayKey(Date.now()));
 const actionMessage = ref("");
 const loading = ref(true);
 const showBestSellers = ref(false);
+const adminTab = ref("orders");
 
 const todayKey = computed(() => cafeDayKey(clock.value));
 const isTodayView = computed(() => selectedDayKey.value === todayKey.value);
@@ -257,9 +260,17 @@ onUnmounted(() => {
     </Transition>
 
     <div class="admin-toolbar">
+      <div class="admin-tabs">
+        <button type="button" class="filter-btn" :class="{ active: adminTab === 'orders' }" @click="adminTab = 'orders'">سفارش‌ها</button>
+        <button type="button" class="filter-btn" :class="{ active: adminTab === 'stock' }" @click="adminTab = 'stock'">موجودی روزانه</button>
+        <button type="button" class="filter-btn" :class="{ active: adminTab === 'prices' }" @click="adminTab = 'prices'">مدیریت قیمت‌ها</button>
+      </div>
       <button type="button" class="logout-btn" @click="logout">خروج</button>
     </div>
 
+    <DailyStock v-if="adminTab === 'stock'" />
+    <PriceManager v-if="adminTab === 'prices'" />
+    <template v-if="adminTab === 'orders'">
     <div class="admin-today-bar">
       <div>تاریخ: {{ todayLabel }}</div>
       <div>درآمد امروز: {{ formatPrice(todayOnlyIncome) }}</div>
@@ -395,5 +406,6 @@ onUnmounted(() => {
         </ol>
       </div>
     </div>
+    </template>
   </div>
 </template>

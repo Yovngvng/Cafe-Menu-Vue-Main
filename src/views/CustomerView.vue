@@ -1,7 +1,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
-import { menu } from "../data/menuData.js";
+import { menu as staticMenu } from "../data/menuData.js";
+import { applyPriceOverrides, filterByAvailability } from "../data/catalog.js";
+import { fetchAvailability } from "../services/availability.js";
+import { fetchPriceOverrides } from "../services/prices.js";
+import { cafeDayKey } from "../utils/orderStatus.js";
 import Menu from "../components/customer/Menu.vue";
 import Cart from "../components/customer/Cart.vue";
 
@@ -23,6 +27,15 @@ const showCart = ref(false);
 const toast = ref(false);
 const toastText = ref("");
 const showScrollTop = ref(false);
+const priceMap = ref({});
+const availableKeys = ref(new Set());
+const applyAvailability = ref(true);
+
+const liveMenu = computed(() =>
+  filterByAvailability(applyPriceOverrides(staticMenu, priceMap.value), availableKeys.value, {
+    apply: applyAvailability.value,
+  })
+);
 
 const orderLocation = ref("");
 const tableNumber = ref("");
@@ -103,9 +116,22 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
+
+  const [prices, stock] = await Promise.all([
+    fetchPriceOverrides(),
+    fetchAvailability(cafeDayKey()),
+  ]);
+  if (prices.ok) priceMap.value = prices.map;
+  if (stock.ok) {
+    availableKeys.value = new Set(
+      stock.rows.filter((row) => row.is_available).map((row) => row.item_key)
+    );
+  } else {
+    applyAvailability.value = false;
+  }
 
   const table = route.query.table;
   if (!table) return;
@@ -124,14 +150,17 @@ onUnmounted(() => {
 
 <template>
   <header class="app-header">
-    <h1>کافه ژوان</h1>
+    <div class="header-brand">
+      <p class="tax-note">سفارش‌های بالای ۳۰۰ هزار تومان مشمول ۱۰٪ مالیات می‌شوند</p>
+      <h1>کافه ژوان</h1>
+    </div>
   </header>
 
   <button class="cart-toggle-btn" @click="showCart = true">
     💳 سبد خرید ({{ cartQty }})
   </button>
 
-  <Menu :menu="menu" @add="addToCart" />
+  <Menu :menu="liveMenu" @add="addToCart" />
   <Cart
     :items="cart"
     :visible="showCart"

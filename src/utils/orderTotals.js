@@ -1,5 +1,5 @@
 /** Prices are stored in thousands of toman. Tax applies above this subtotal. */
-export const TAX_THRESHOLD = 200;
+export const TAX_THRESHOLD = 300;
 export const TAX_RATE = 0.1;
 
 export function lineSubtotal(items) {
@@ -28,4 +28,9 @@ export function extractOrderTax(items) {
 export function productLines(items) {
   if (!Array.isArray(items)) return [];
   return items.filter((item) => item && item.name);
+}
+
+export function extractHolderRequested(items) {
+  if (!Array.isArray(items)) return false;
+  return items.some((item) => item && item.holder_requested === true && !item.name);
 }

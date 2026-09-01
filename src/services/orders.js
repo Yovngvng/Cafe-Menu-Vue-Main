@@ -1,7 +1,7 @@
 import { supabase, friendlyError, isPermissionError } from "./supabase.js";
 import { canonicalStatus, STATUS } from "../utils/orderStatus.js";
 
-function compactItems(items, tax = 0) {
+function compactItems(items, tax = 0, holderRequested = false) {
   const lines = (items || [])
     .filter((item) => item && item.name)
     .map((item) => ({
@@ -15,6 +15,10 @@ function compactItems(items, tax = 0) {
 
   if (Number(tax) > 0) {
     lines.push({ tax: Number(tax) });
+  }
+
+  if (holderRequested) {
+    lines.push({ holder_requested: true });
   }
 
   return lines;
@@ -41,13 +45,14 @@ export async function createOrder({
   items,
   total,
   tax = 0,
+  holderRequested = false,
 }) {
   const payload = {
     customer_name: null,
     order_type: orderType,
     table_number: tableNumber || null,
     note: note || null,
-    items: compactItems(items, tax),
+    items: compactItems(items, tax, holderRequested),
     total,
     status: STATUS.WAITING,
   };

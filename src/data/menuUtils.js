@@ -1,4 +1,5 @@
 import { formatPrice } from "../utils/formatPrice.js";
+import { priceKey } from "./catalog.js";
 
 const SIZE_LABELS = ["یک نفره", "دو نفره", "چهار نفره", "تک نفره"];
 const SIZE_PATTERN = SIZE_LABELS.join("|");
@@ -39,6 +40,10 @@ export function buildCartLine(item, { size, toppingSelected } = {}) {
     price: basePrice + extra,
     image: item.image,
     description: item.description,
+    item_key: item.item_key,
+    priceKey: priceKey(item, sizeLabel),
+    category: item.category,
+    isDrink: Boolean(item.isDrink),
   };
 }
 

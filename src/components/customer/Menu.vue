@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, nextTick, watch } from "vue";
 import { getFeaturedItems, formatItemListPrice, buildCartLine } from "../../data/menuUtils.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { useRatings } from "../../composables/useRatings.js";
@@ -15,7 +15,7 @@ const emit = defineEmits(["add"]);
 const navRef = ref(null);
 const featuredTrack = ref(null);
 const activeCategoryName = ref(props.menu[0]?.category || "");
-const featuredItems = getFeaturedItems(props.menu);
+const featuredItems = computed(() => getFeaturedItems(props.menu));
 
 const selectedProduct = ref(null);
 const selectedSizeIndex = ref(0);
@@ -23,6 +23,16 @@ const toppingSelected = ref(false);
 const adding = ref(false);
 
 const { loadRatings } = useRatings();
+
+watch(
+  () => props.menu,
+  (next) => {
+    if (!next?.length) return;
+    const stillThere = next.some((category) => category.category === activeCategoryName.value);
+    if (!stillThere) activeCategoryName.value = next[0].category;
+  },
+  { deep: true }
+);
 
 const activeCategory = computed(
   () => props.menu.find((category) => category.category === activeCategoryName.value) || props.menu[0]
@@ -119,7 +129,7 @@ async function addProduct() {
       <div ref="featuredTrack" class="featured-items-container">
         <div
           v-for="item in featuredItems"
-          :key="item.name"
+          :key="item.item_key || item.name"
           class="featured-card"
           @click="openProduct(item)"
         >
@@ -145,7 +155,7 @@ async function addProduct() {
       <div
         class="menu-item-row show"
         v-for="item in activeCategory.items"
-        :key="item.name"
+        :key="item.item_key || item.name"
         @click="openProduct(item)"
       >
         <img v-if="item.image" class="menu-image" :src="item.image" :alt="item.name" />

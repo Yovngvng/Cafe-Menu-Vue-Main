@@ -1,8 +1,9 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { createOrder } from "../../services/orders.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { orderTotals } from "../../utils/orderTotals.js";
+import { DRINK_CATEGORIES } from "../../data/catalog.js";
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -35,6 +36,16 @@ const totalPrice = computed(() => totals.value.total);
 const submitting = ref(false);
 const message = ref("");
 const messageType = ref("");
+const holderRequested = ref(false);
+
+const cartHasDrink = computed(() =>
+  props.items.some((item) => item.isDrink || DRINK_CATEGORIES.has(item.category))
+);
+const showHolder = computed(() => props.location === "بیرون بر" && cartHasDrink.value);
+
+watch(showHolder, (visible) => {
+  if (!visible) holderRequested.value = false;
+});
 
 function showMessage(text, type) {
   message.value = text;
@@ -66,6 +77,7 @@ async function submitOrder() {
     items: props.items,
     total: totalPrice.value,
     tax: taxAmount.value,
+    holderRequested: showHolder.value && holderRequested.value,
   });
   submitting.value = false;
 
@@ -119,6 +131,11 @@ async function submitOrder() {
             <option v-for="n in 5" :key="n" :value="String(n)">میز {{ n }}</option>
           </select>
         </div>
+
+        <label v-if="showHolder" class="holder-row">
+          <input type="checkbox" v-model="holderRequested" />
+          <span>هولدر</span>
+        </label>
       </div>
 
       <div class="order-note-box">
@@ -132,7 +149,7 @@ async function submitOrder() {
 
       <div class="cart-totals">
         <p>جمع جزء: {{ formatPrice(subtotalPrice) }}</p>
-        <p v-if="taxAmount">مالیات ۱۰٪: {{ formatPrice(taxAmount) }}</p>
+        <p v-if="taxAmount">مالیات ۱۰٪ (بالای ۳۰۰ هزار): {{ formatPrice(taxAmount) }}</p>
         <p class="cart-total">جمع کل: {{ formatPrice(totalPrice) }}</p>
       </div>
 

@@ -1,0 +1,115 @@
+export const AVAILABILITY_CATEGORIES = ["آبمیوه", "کیک و دسر"];
+
+export const DRINK_CATEGORIES = new Set([
+  "اسپرسو",
+  "چای گرم",
+  "دمنوش گرم",
+  "بار گرم",
+  "نوشیدنی گرم",
+  "شیک",
+  "نوشیدنی سرد",
+  "آبمیوه",
+  "بار سرد",
+  "اسموتی",
+  "فراپه",
+  "آیس باکس",
+]);
+
+export function makeItemKey(name, category = "") {
+  const base = String(name).trim().replace(/\s+/g, "-");
+  const cat = String(category).trim().replace(/\s+/g, "-");
+  return cat ? `${cat}/${base}` : base;
+}
+
+export function priceKey(item, sizeLabel = "") {
+  const base = item.item_key || makeItemKey(item.name, item.category);
+  return sizeLabel ? `${base}::${sizeLabel}` : base;
+}
+
+export function enrichMenu(menu) {
+  return (menu || []).map((category) => ({
+    ...category,
+    items: (category.items || []).map((item) => ({
+      ...item,
+      category: category.category,
+      item_key: item.item_key || makeItemKey(item.name, category.category),
+      isDrink: DRINK_CATEGORIES.has(category.category),
+      needsAvailability: AVAILABILITY_CATEGORIES.includes(category.category),
+    })),
+  }));
+}
+
+export function applyPriceOverrides(menu, overrideMap = {}) {
+  return (menu || []).map((category) => ({
+    ...category,
+    items: (category.items || []).map((item) => {
+      if (item.sizes?.length) {
+        return {
+          ...item,
+          sizes: item.sizes.map((size) => {
+            const override = overrideMap[priceKey(item, size.size)];
+            if (override == null) return size;
+            return { ...size, price: Number(override) };
+          }),
+        };
+      }
+      const override = overrideMap[priceKey(item)];
+      if (override == null) return item;
+      return { ...item, price: Number(override) };
+    }),
+  }));
+}
+
+export function filterByAvailability(menu, availableKeys, options = {}) {
+  if (options.apply === false) return menu;
+  return (menu || [])
+    .map((category) => {
+      if (!AVAILABILITY_CATEGORIES.includes(category.category)) return category;
+      return {
+        ...category,
+        items: (category.items || []).filter((item) => availableKeys.has(item.item_key)),
+      };
+    })
+    .filter((category) => (category.items || []).length > 0);
+}
+
+export function stockCatalog(menu) {
+  const rows = [];
+  (menu || []).forEach((category) => {
+    if (!AVAILABILITY_CATEGORIES.includes(category.category)) return;
+    (category.items || []).forEach((item) => {
+      rows.push({
+        item_key: item.item_key,
+        name: item.name,
+        category: category.category,
+      });
+    });
+  });
+  return rows;
+}
+
+export function priceCatalog(menu) {
+  const rows = [];
+  (menu || []).forEach((category) => {
+    (category.items || []).forEach((item) => {
+      if (item.sizes?.length) {
+        item.sizes.forEach((size) => {
+          rows.push({
+            key: priceKey(item, size.size),
+            label: `${item.name} - ${size.size}`,
+            category: category.category,
+            staticPrice: Number(size.price) || 0,
+          });
+        });
+      } else {
+        rows.push({
+          key: priceKey(item),
+          label: item.name,
+          category: category.category,
+          staticPrice: Number(item.price) || 0,
+        });
+      }
+    });
+  });
+  return rows;
+}
