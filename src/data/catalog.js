@@ -1,5 +1,7 @@
 export const AVAILABILITY_CATEGORIES = ["آبمیوه", "کیک و دسر"];
 
+export const ICE_BOX_CATEGORY = "آیس باکس";
+
 export const DRINK_CATEGORIES = new Set([
   "اسپرسو",
   "چای گرم",
@@ -14,6 +16,25 @@ export const DRINK_CATEGORIES = new Set([
   "فراپه",
   "آیس باکس",
 ]);
+
+export function isIceBoxItem(item) {
+  if (item?.isIceBox) return true;
+  const category = String(item?.category || "");
+  const name = String(item?.name || item?.productName || "");
+  const key = String(item?.item_key || "");
+  return (
+    category === ICE_BOX_CATEGORY ||
+    category.includes(ICE_BOX_CATEGORY) ||
+    name.includes(ICE_BOX_CATEGORY) ||
+    key.includes("آیس-باکس") ||
+    key.includes("آیس باکس")
+  );
+}
+
+export function isHolderDrink(item) {
+  const drink = Boolean(item?.isDrink) || DRINK_CATEGORIES.has(item?.category);
+  return drink && !isIceBoxItem(item);
+}
 
 export function makeItemKey(name, category = "") {
   const base = String(name).trim().replace(/\s+/g, "-");
@@ -34,6 +55,7 @@ export function enrichMenu(menu) {
       category: category.category,
       item_key: item.item_key || makeItemKey(item.name, category.category),
       isDrink: DRINK_CATEGORIES.has(category.category),
+      isIceBox: category.category === ICE_BOX_CATEGORY,
       needsAvailability: AVAILABILITY_CATEGORIES.includes(category.category),
     })),
   }));

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { formatPrice } from "../../utils/formatPrice.js";
-import { extractOrderTax, extractHolderRequested, productLines } from "../../utils/orderTotals.js";
+import { extractOrderTax, extractHolderRequested, extractHolderFee, productLines } from "../../utils/orderTotals.js";
 import { canonicalStatus, nextStatus, nextStatusLabel, STATUS, orderTimestamp } from "../../utils/orderStatus.js";
 
 const props = defineProps({
@@ -22,6 +22,7 @@ const displayId = computed(() => {
 const items = computed(() => productLines(props.order.items));
 const taxAmount = computed(() => extractOrderTax(props.order.items));
 const holderRequested = computed(() => extractHolderRequested(props.order.items));
+const holderFee = computed(() => extractHolderFee(props.order.items));
 
 function timeAgo(timestamp) {
   if (!timestamp) return "";
@@ -53,7 +54,7 @@ const timeLabel = computed(() => {
     <p v-if="order.customer_name">مشتری: {{ order.customer_name }}</p>
     <p v-if="order.order_type">محل: {{ order.order_type }} {{ order.table_number ? '- میز ' + order.table_number : '' }}</p>
     <p v-if="taxAmount">مالیات ۱۰٪: {{ formatPrice(taxAmount) }}</p>
-    <p v-if="holderRequested">هولدر: دارد</p>
+    <p v-if="holderRequested">هولدر: دارد ({{ formatPrice(holderFee) }})</p>
     <p>مبلغ: {{ formatPrice(order.total) }}</p>
     <p>وضعیت: {{ status }}</p>
     <p v-if="order.note">یادداشت: {{ order.note }}</p>

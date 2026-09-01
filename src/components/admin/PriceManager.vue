@@ -9,8 +9,9 @@ const catalog = priceCatalog(menu);
 const overrides = ref({});
 const drafts = ref({});
 const query = ref("");
-const savingKey = ref("");
+const saving = ref(false);
 const message = ref("");
+const messageOk = ref(false);
 const loading = ref(true);
 
 const rows = computed(() => {
@@ -18,14 +19,19 @@ const rows = computed(() => {
   return catalog
     .map((row) => {
       const override = overrides.value[row.key];
-      const effective = override == null ? row.staticPrice : Number(override);
-      return { ...row, effective, hasOverride: override != null };
+      const savedPrice = override == null ? row.staticPrice : Number(override);
+      const draftPrice = Number(drafts.value[row.key]);
+      const dirty = Number.isFinite(draftPrice) && draftPrice !== savedPrice;
+      return { ...row, savedPrice, dirty };
     })
-    .filter((row) => !q || row.label.includes(q) || row.category.includes(q));
+    .filter((row) => !q || row.label.includes(q) || row.category.includes(q) || row.key.includes(q));
 });
 
-function flash(text) {
+const dirtyRows = computed(() => rows.value.filter((row) => row.dirty));
+
+function flash(text, ok = false) {
   message.value = text;
+  messageOk.value = ok;
   setTimeout(() => {
     message.value = "";
   }, 2800);
@@ -47,20 +53,37 @@ async function loadPrices() {
   drafts.value = next;
 }
 
-async function saveRow(row) {
-  const price = Number(drafts.value[row.key]);
-  if (!Number.isFinite(price) || price < 0) {
-    flash("قیمت نامعتبر است");
+function setDraft(key, value) {
+  drafts.value = { ...drafts.value, [key]: value };
+}
+
+async function savePrices(targets) {
+  if (!targets.length) {
+    flash("تغییری برای ذخیره نیست");
     return;
   }
-  savingKey.value = row.key;
-  const result = await upsertPriceOverride(row.key, price);
-  savingKey.value = "";
-  if (!result.ok) {
-    flash(result.message);
-    return;
+  for (const row of targets) {
+    const price = Number(drafts.value[row.key]);
+    if (!Number.isFinite(price) || price < 0) {
+      flash(`قیمت «${row.label}» نامعتبر است`);
+      return;
+    }
   }
-  overrides.value = { ...overrides.value, [row.key]: price };
+  saving.value = true;
+  const nextOverrides = { ...overrides.value };
+  for (const row of targets) {
+    const price = Number(drafts.value[row.key]);
+    const result = await upsertPriceOverride(row.key, price);
+    if (!result.ok) {
+      saving.value = false;
+      flash(result.message);
+      return;
+    }
+    nextOverrides[row.key] = price;
+  }
+  overrides.value = nextOverrides;
+  saving.value = false;
+  flash(targets.length === 1 ? "قیمت ذخیره شد" : `${targets.length} قیمت ذخیره شد`, true);
 }
 
 onMounted(loadPrices);
@@ -69,26 +92,42 @@ onMounted(loadPrices);
 <template>
   <section class="admin-panel-section">
     <h1>مدیریت قیمت‌ها</h1>
-    <p class="admin-help">قیمت‌ها به هزار تومان. سایزها جداگانه ذخیره می‌شوند.</p>
-    <input v-model="query" class="price-search" type="search" placeholder="جستجوی آیتم..." />
-    <p v-if="message" class="msg-error">{{ message }}</p>
+    <p class="admin-help">قیمت‌ها به هزار تومان. تا وقتی ذخیره نکنید روی منوی مشتری اعمال نمی‌شود.</p>
+    <div class="price-toolbar">
+      <input v-model="query" class="price-search" type="search" placeholder="جستجوی آیتم..." />
+      <button
+        type="button"
+        class="price-save-all"
+        :disabled="saving || !dirtyRows.length"
+        @click="savePrices(dirtyRows)"
+      >
+        {{ saving ? "در حال ذخیره..." : "ذخیره تغییرات" }}
+      </button>
+    </div>
+    <p v-if="message" :class="messageOk ? 'msg-success' : 'msg-error'">{{ message }}</p>
     <p v-if="loading" class="admin-loading">در حال بارگذاری...</p>
 
     <div class="price-list">
-      <div v-for="row in rows" :key="row.key" class="price-row">
+      <div v-for="row in rows" :key="row.key" class="price-row" :class="{ dirty: row.dirty }">
         <div>
           <strong>{{ row.label }}</strong>
-          <small>{{ row.category }} — فعلی {{ formatPrice(row.effective) }}</small>
+          <small>{{ row.category }} — فعلی {{ formatPrice(row.savedPrice) }}</small>
         </div>
         <div class="price-edit">
           <input
             type="number"
             min="0"
             :value="drafts[row.key]"
-            @input="drafts[row.key] = $event.target.value"
-            @change="saveRow(row)"
+            @input="setDraft(row.key, $event.target.value)"
           />
-          <span v-if="savingKey === row.key">...</span>
+          <button
+            type="button"
+            class="price-save-btn"
+            :disabled="saving || !row.dirty"
+            @click="savePrices([row])"
+          >
+            ذخیره
+          </button>
         </div>
       </div>
     </div>

@@ -2,8 +2,8 @@
 import { computed, ref, watch } from "vue";
 import { createOrder } from "../../services/orders.js";
 import { formatPrice } from "../../utils/formatPrice.js";
-import { orderTotals } from "../../utils/orderTotals.js";
-import { DRINK_CATEGORIES } from "../../data/catalog.js";
+import { orderTotals, HOLDER_FEE } from "../../utils/orderTotals.js";
+import { isHolderDrink } from "../../data/catalog.js";
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -28,24 +28,25 @@ const totalQty = computed(() =>
   props.items.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
 );
 
-const totals = computed(() => orderTotals(props.items));
+const holderRequested = ref(false);
+const holderFee = computed(() => (showHolder.value && holderRequested.value ? HOLDER_FEE : 0));
+const totals = computed(() => orderTotals(props.items, { holderFee: holderFee.value }));
+const itemsSubtotal = computed(() => totals.value.itemsSubtotal);
 const subtotalPrice = computed(() => totals.value.subtotal);
 const taxAmount = computed(() => totals.value.tax);
 const totalPrice = computed(() => totals.value.total);
 
-const submitting = ref(false);
-const message = ref("");
-const messageType = ref("");
-const holderRequested = ref(false);
-
-const cartHasDrink = computed(() =>
-  props.items.some((item) => item.isDrink || DRINK_CATEGORIES.has(item.category))
+const showHolder = computed(
+  () => props.location === "بیرون بر" && props.items.some((item) => isHolderDrink(item))
 );
-const showHolder = computed(() => props.location === "بیرون بر" && cartHasDrink.value);
 
 watch(showHolder, (visible) => {
   if (!visible) holderRequested.value = false;
 });
+
+const submitting = ref(false);
+const message = ref("");
+const messageType = ref("");
 
 function showMessage(text, type) {
   message.value = text;
@@ -78,6 +79,7 @@ async function submitOrder() {
     total: totalPrice.value,
     tax: taxAmount.value,
     holderRequested: showHolder.value && holderRequested.value,
+    holderFee: holderFee.value,
   });
   submitting.value = false;
 
@@ -132,9 +134,10 @@ async function submitOrder() {
           </select>
         </div>
 
-        <label v-if="showHolder" class="holder-row">
+        <label v-if="showHolder" class="fancy-check holder-row">
           <input type="checkbox" v-model="holderRequested" />
-          <span>هولدر</span>
+          <span class="ios-switch" aria-hidden="true"></span>
+          <span class="fancy-check-text">هولدر (+{{ formatPrice(HOLDER_FEE) }})</span>
         </label>
       </div>
 
@@ -148,6 +151,8 @@ async function submitOrder() {
       </div>
 
       <div class="cart-totals">
+        <p>جمع اقلام: {{ formatPrice(itemsSubtotal) }}</p>
+        <p v-if="holderFee">هولدر: {{ formatPrice(holderFee) }}</p>
         <p>جمع جزء: {{ formatPrice(subtotalPrice) }}</p>
         <p v-if="taxAmount">مالیات ۱۰٪ (بالای ۳۰۰ هزار): {{ formatPrice(taxAmount) }}</p>
         <p class="cart-total">جمع کل: {{ formatPrice(totalPrice) }}</p>

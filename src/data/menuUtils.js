@@ -44,6 +44,7 @@ export function buildCartLine(item, { size, toppingSelected } = {}) {
     priceKey: priceKey(item, sizeLabel),
     category: item.category,
     isDrink: Boolean(item.isDrink),
+    isIceBox: Boolean(item.isIceBox),
   };
 }
 

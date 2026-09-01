@@ -1,7 +1,8 @@
 import { supabase, friendlyError, isPermissionError } from "./supabase.js";
 import { canonicalStatus, STATUS } from "../utils/orderStatus.js";
+import { HOLDER_FEE } from "../utils/orderTotals.js";
 
-function compactItems(items, tax = 0, holderRequested = false) {
+function compactItems(items, tax = 0, holderRequested = false, holderFee = 0) {
   const lines = (items || [])
     .filter((item) => item && item.name)
     .map((item) => ({
@@ -18,7 +19,10 @@ function compactItems(items, tax = 0, holderRequested = false) {
   }
 
   if (holderRequested) {
-    lines.push({ holder_requested: true });
+    lines.push({
+      holder_requested: true,
+      holder_fee: Number(holderFee) || HOLDER_FEE,
+    });
   }
 
   return lines;
@@ -46,13 +50,14 @@ export async function createOrder({
   total,
   tax = 0,
   holderRequested = false,
+  holderFee = 0,
 }) {
   const payload = {
     customer_name: null,
     order_type: orderType,
     table_number: tableNumber || null,
     note: note || null,
-    items: compactItems(items, tax, holderRequested),
+    items: compactItems(items, tax, holderRequested, holderFee),
     total,
     status: STATUS.WAITING,
   };

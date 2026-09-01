@@ -187,9 +187,10 @@ async function addProduct() {
         </label>
       </div>
 
-      <label v-if="selectedProduct.optionalTopping" class="topping-row">
+      <label v-if="selectedProduct.optionalTopping" class="fancy-check topping-row">
         <input type="checkbox" v-model="toppingSelected" />
-        <span>
+        <span class="ios-switch" aria-hidden="true"></span>
+        <span class="fancy-check-text">
           {{ selectedProduct.optionalTopping.name }}
           (+{{ formatPrice(selectedProduct.optionalTopping.price) }})
         </span>

@@ -151,8 +151,8 @@ onUnmounted(() => {
 <template>
   <header class="app-header">
     <div class="header-brand">
-      <p class="tax-note">سفارش‌های بالای ۳۰۰ هزار تومان مشمول ۱۰٪ مالیات می‌شوند</p>
       <h1>کافه ژوان</h1>
+      <p class="tax-note">سفارش‌های بالای ۳۰۰ هزار تومان مشمول ۱۰٪ مالیات می‌شوند</p>
     </div>
   </header>
 
