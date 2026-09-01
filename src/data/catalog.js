@@ -1,5 +1,25 @@
 export const AVAILABILITY_CATEGORIES = ["آبمیوه", "کیک و دسر"];
 
+export const STOCK_GROUPS = [
+  {
+    id: "juices",
+    title: "آبمیوه‌ها",
+    match: (category) => String(category).includes("آبمیوه"),
+  },
+  {
+    id: "cakes",
+    title: "کیک و دسر",
+    match: (category) => {
+      const name = String(category);
+      return name.includes("کیک") || name.includes("دسر");
+    },
+  },
+];
+
+export function needsAvailability(category) {
+  return STOCK_GROUPS.some((group) => group.match(category));
+}
+
 export const ICE_BOX_CATEGORY = "آیس باکس";
 
 export const DRINK_CATEGORIES = new Set([
@@ -56,7 +76,7 @@ export function enrichMenu(menu) {
       item_key: item.item_key || makeItemKey(item.name, category.category),
       isDrink: DRINK_CATEGORIES.has(category.category),
       isIceBox: category.category === ICE_BOX_CATEGORY,
-      needsAvailability: AVAILABILITY_CATEGORIES.includes(category.category),
+      needsAvailability: needsAvailability(category.category),
     })),
   }));
 }
@@ -84,21 +104,19 @@ export function applyPriceOverrides(menu, overrideMap = {}) {
 
 export function filterByAvailability(menu, availableKeys, options = {}) {
   if (options.apply === false) return menu;
-  return (menu || [])
-    .map((category) => {
-      if (!AVAILABILITY_CATEGORIES.includes(category.category)) return category;
-      return {
-        ...category,
-        items: (category.items || []).filter((item) => availableKeys.has(item.item_key)),
-      };
-    })
-    .filter((category) => (category.items || []).length > 0);
+  return (menu || []).map((category) => {
+    if (!needsAvailability(category.category)) return category;
+    return {
+      ...category,
+      items: (category.items || []).filter((item) => availableKeys.has(item.item_key)),
+    };
+  });
 }
 
 export function stockCatalog(menu) {
   const rows = [];
   (menu || []).forEach((category) => {
-    if (!AVAILABILITY_CATEGORIES.includes(category.category)) return;
+    if (!needsAvailability(category.category)) return;
     (category.items || []).forEach((item) => {
       rows.push({
         item_key: item.item_key,

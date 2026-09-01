@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { menu } from "../../data/menuData.js";
-import { stockCatalog } from "../../data/catalog.js";
+import { STOCK_GROUPS, stockCatalog } from "../../data/catalog.js";
 import { copyAvailability, fetchAvailability, upsertAvailability } from "../../services/availability.js";
 import { cafeDayKey, recentCafeDayKeys } from "../../utils/orderStatus.js";
 
@@ -14,16 +14,18 @@ const busyKey = ref("");
 const message = ref("");
 const messageOk = ref(false);
 const query = ref("");
+const collapsed = ref({});
 
 const groups = computed(() => {
   const q = query.value.trim();
-  const map = new Map();
-  items.forEach((item) => {
-    if (q && !item.name.includes(q) && !String(item.item_key || "").includes(q)) return;
-    if (!map.has(item.category)) map.set(item.category, []);
-    map.get(item.category).push(item);
+  return STOCK_GROUPS.map((group) => {
+    const rows = items.filter((item) => {
+      if (!group.match(item.category)) return false;
+      if (!q) return true;
+      return item.name.includes(q) || String(item.item_key || "").includes(q);
+    });
+    return { ...group, rows };
   });
-  return [...map.entries()].map(([category, rows]) => ({ category, rows }));
 });
 
 const visibleCount = computed(() => groups.value.reduce((sum, group) => sum + group.rows.length, 0));
@@ -34,6 +36,10 @@ function flash(text, ok = false) {
   setTimeout(() => {
     message.value = "";
   }, 2800);
+}
+
+function toggleGroup(id) {
+  collapsed.value = { ...collapsed.value, [id]: !collapsed.value[id] };
 }
 
 async function loadToday() {
@@ -67,20 +73,17 @@ async function toggle(item) {
   available.value = { ...available.value, [item.item_key]: next };
 }
 
-async function copyYesterday() {
+async function copyYesterday(group) {
   if (!yesterdayKey.value) return;
-  busyKey.value = "copy";
-  const result = await copyAvailability(
-    yesterdayKey.value,
-    todayKey.value,
-    items.map((item) => item.item_key)
-  );
+  const keys = items.filter((item) => group.match(item.category)).map((item) => item.item_key);
+  busyKey.value = `copy-${group.id}`;
+  const result = await copyAvailability(yesterdayKey.value, todayKey.value, keys);
   busyKey.value = "";
   if (!result.ok) {
     flash(result.message);
     return;
   }
-  flash("موجودی دیروز کپی شد", true);
+  flash(`موجودی دیروز برای ${group.title} کپی شد`, true);
   await loadToday();
 }
 
@@ -92,27 +95,40 @@ onMounted(loadToday);
     <header class="stock-header">
       <div>
         <h1>موجودی روزانه</h1>
-        <p class="admin-help">آبمیوه‌ها و کیک‌های امروز ({{ todayKey }}). بدون رکورد = ناموجود.</p>
+        <p class="admin-help">آبمیوه‌ها و کیک و دسر امروز ({{ todayKey }}). بدون رکورد = ناموجود.</p>
       </div>
-      <button type="button" class="copy-yesterday-btn" :disabled="busyKey === 'copy'" @click="copyYesterday">
-        {{ busyKey === "copy" ? "در حال کپی..." : "کپی از دیروز" }}
-      </button>
     </header>
 
     <input
       v-model="query"
       class="stock-search"
       type="search"
-      placeholder="جستجو بر اساس نام یا کلید آیتم..."
+      placeholder="جستجو در همه گروه‌ها بر اساس نام یا کلید آیتم..."
     />
 
     <p v-if="message" :class="messageOk ? 'msg-success' : 'msg-error'">{{ message }}</p>
     <p v-if="loading" class="admin-loading">در حال بارگذاری...</p>
     <p v-else-if="!visibleCount" class="admin-loading">موردی پیدا نشد.</p>
 
-    <div v-for="group in groups" :key="group.category" class="stock-group">
-      <h2>{{ group.category }} <small>{{ group.rows.length }} مورد</small></h2>
-      <div class="stock-grid">
+    <section v-for="group in groups" :key="group.id" class="stock-block">
+      <div class="stock-block-head">
+        <button type="button" class="stock-block-title" @click="toggleGroup(group.id)">
+          <span class="stock-caret" :class="{ closed: collapsed[group.id] }">▾</span>
+          <h2>{{ group.title }}</h2>
+          <small>{{ group.rows.length }} مورد</small>
+        </button>
+        <button
+          type="button"
+          class="copy-yesterday-btn"
+          :disabled="Boolean(busyKey)"
+          @click="copyYesterday(group)"
+        >
+          {{ busyKey === `copy-${group.id}` ? "در حال کپی..." : "کپی از دیروز" }}
+        </button>
+      </div>
+
+      <div v-show="!collapsed[group.id]" class="stock-grid">
+        <p v-if="!group.rows.length" class="admin-loading">موردی در این گروه نیست.</p>
         <button
           v-for="item in group.rows"
           :key="item.item_key"
@@ -130,6 +146,6 @@ onMounted(loadToday);
           <span class="stock-state">{{ available[item.item_key] ? "موجود" : "ناموجود" }}</span>
         </button>
       </div>
-    </div>
+    </section>
   </section>
 </template>

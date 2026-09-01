@@ -50,3 +50,18 @@ export async function copyAvailability(fromDate, toDate, itemKeys) {
   }
   return { ok: true };
 }
+
+export function subscribeAvailability(onChange) {
+  const channel = supabase
+    .channel("item_availability_live")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "item_availability" },
+      onChange
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}

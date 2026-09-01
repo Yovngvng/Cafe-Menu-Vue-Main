@@ -152,6 +152,7 @@ async function addProduct() {
   <div class="menu-list">
     <section v-if="activeCategory" class="menu-section">
       <h2>{{ activeCategory.category }}</h2>
+      <p v-if="!activeCategory.items?.length" class="empty-category">امروز موجود نیست</p>
       <div
         class="menu-item-row show"
         v-for="item in activeCategory.items"

@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { menu as staticMenu } from "../data/menuData.js";
 import { applyPriceOverrides, filterByAvailability } from "../data/catalog.js";
-import { fetchAvailability } from "../services/availability.js";
+import { fetchAvailability, subscribeAvailability } from "../services/availability.js";
 import { fetchPriceOverrides } from "../services/prices.js";
 import { cafeDayKey } from "../utils/orderStatus.js";
 import Menu from "../components/customer/Menu.vue";
@@ -29,12 +29,9 @@ const toastText = ref("");
 const showScrollTop = ref(false);
 const priceMap = ref({});
 const availableKeys = ref(new Set());
-const applyAvailability = ref(true);
 
 const liveMenu = computed(() =>
-  filterByAvailability(applyPriceOverrides(staticMenu, priceMap.value), availableKeys.value, {
-    apply: applyAvailability.value,
-  })
+  filterByAvailability(applyPriceOverrides(staticMenu, priceMap.value), availableKeys.value)
 );
 
 const orderLocation = ref("");
@@ -116,22 +113,35 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function applyStockRows(rows) {
+  availableKeys.value = new Set(
+    (rows || []).filter((row) => row.is_available).map((row) => row.item_key)
+  );
+}
+
+async function loadStock() {
+  const stock = await fetchAvailability(cafeDayKey());
+  if (stock.ok) applyStockRows(stock.rows);
+}
+
+function onVisibility() {
+  if (document.visibilityState === "visible") loadStock();
+}
+
+let stopAvailability;
+
 onMounted(async () => {
   window.addEventListener("scroll", onScroll, { passive: true });
+  document.addEventListener("visibilitychange", onVisibility);
+  window.addEventListener("focus", loadStock);
   onScroll();
 
-  const [prices, stock] = await Promise.all([
-    fetchPriceOverrides(),
-    fetchAvailability(cafeDayKey()),
-  ]);
+  const [prices] = await Promise.all([fetchPriceOverrides(), loadStock()]);
   if (prices.ok) priceMap.value = prices.map;
-  if (stock.ok) {
-    availableKeys.value = new Set(
-      stock.rows.filter((row) => row.is_available).map((row) => row.item_key)
-    );
-  } else {
-    applyAvailability.value = false;
-  }
+
+  stopAvailability = subscribeAvailability(() => {
+    loadStock();
+  });
 
   const table = route.query.table;
   if (!table) return;
@@ -145,6 +155,9 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener("scroll", onScroll);
+  document.removeEventListener("visibilitychange", onVisibility);
+  window.removeEventListener("focus", loadStock);
+  if (stopAvailability) stopAvailability();
 });
 </script>
 
@@ -152,9 +165,9 @@ onUnmounted(() => {
   <header class="app-header">
     <div class="header-brand">
       <h1>کافه ژوان</h1>
-      <p class="tax-note">سفارش‌های بالای ۳۰۰ هزار تومان مشمول ۱۰٪ مالیات می‌شوند</p>
     </div>
   </header>
+  <p class="tax-banner">سفارش‌های بالای ۳۰۰ هزار تومان مشمول ۱۰٪ مالیات می‌شوند</p>
 
   <button class="cart-toggle-btn" @click="showCart = true">
     💳 سبد خرید ({{ cartQty }})

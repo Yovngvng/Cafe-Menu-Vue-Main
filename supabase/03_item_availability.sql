@@ -29,3 +29,12 @@ with check (true);
 
 grant select on table public.item_availability to anon, authenticated;
 grant insert, update, delete on table public.item_availability to authenticated;
+
+alter table public.item_availability replica identity full;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.item_availability;
+exception
+  when duplicate_object then null;
+end $$;
