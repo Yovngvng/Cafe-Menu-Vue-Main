@@ -857,6 +857,55 @@ img {
     box-sizing: border-box;
 }
 
+.remember-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    color: #d7e3f7;
+    cursor: pointer;
+    font-weight: 600;
+    user-select: none;
+}
+
+.remember-row input {
+    width: auto;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+.notify-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.28);
+}
+
+.notify-banner p {
+    margin: 0;
+    color: var(--accent-2);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.notify-banner button {
+    border: none;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+    background: linear-gradient(180deg, #f3d98a 0%, #d4af37 100%);
+    color: #091122;
+}
+
 .login-box input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);

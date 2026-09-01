@@ -7,6 +7,7 @@ const router = useRouter();
 const route = useRoute();
 const email = ref("");
 const password = ref("");
+const rememberMe = ref(false);
 const error = ref("");
 const loading = ref(false);
 
@@ -18,7 +19,7 @@ async function tryLogin() {
   }
 
   loading.value = true;
-  const result = await signInAdmin(email.value.trim(), password.value);
+  const result = await signInAdmin(email.value.trim(), password.value, rememberMe.value);
   loading.value = false;
 
   if (!result.ok) {
@@ -48,6 +49,10 @@ async function tryLogin() {
       placeholder="رمز عبور"
       @keydown.enter="tryLogin"
     >
+    <label class="remember-row">
+      <input type="checkbox" v-model="rememberMe" />
+      <span>مرا به خاطر بسپار</span>
+    </label>
     <button @click="tryLogin" :disabled="loading">
       {{ loading ? "در حال ورود..." : "ورود" }}
     </button>

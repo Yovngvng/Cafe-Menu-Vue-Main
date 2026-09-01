@@ -6,6 +6,7 @@ import { getOrders, updateOrderStatus, deleteOrder } from "../../services/orders
 import { signOutAdmin } from "../../services/auth.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { playBeep } from "../../utils/playBeep.js";
+import { alertNewOrder, notificationPermission, registerAdminAlertsWorker, requestAlertPermission } from "../../utils/adminAlerts.js";
 import { extractOrderTax, productLines } from "../../utils/orderTotals.js";
 import {
   STATUS,
@@ -33,6 +34,7 @@ const actionMessage = ref("");
 const loading = ref(true);
 const showBestSellers = ref(false);
 const adminTab = ref("orders");
+const notifyState = ref("unsupported");
 
 const todayKey = computed(() => cafeDayKey(clock.value));
 const isTodayView = computed(() => selectedDayKey.value === todayKey.value);
@@ -135,12 +137,17 @@ async function loadOrders() {
   orders.value = result.orders;
 }
 
-function showNewOrderToast() {
+function showNewOrderToast(order) {
   showToast.value = true;
-  playBeep();
+  alertNewOrder(order);
   setTimeout(() => {
     showToast.value = false;
   }, 3000);
+}
+
+async function enableAlerts() {
+  notifyState.value = await requestAlertPermission();
+  playBeep();
 }
 
 const byNewestFirst = computed(() => {
@@ -210,6 +217,8 @@ let clockTimer;
 
 onMounted(async () => {
   window.addEventListener("keydown", onAdminKeydown);
+  notifyState.value = notificationPermission();
+  registerAdminAlertsWorker();
   await loadOrders();
   loading.value = false;
   let lastDayKey = cafeDayKey(clock.value);
@@ -237,7 +246,7 @@ onMounted(async () => {
       async (payload) => {
         await loadOrders();
         if (payload.eventType === "INSERT") {
-          showNewOrderToast();
+          showNewOrderToast(payload.new);
         }
       }
     )
@@ -266,6 +275,16 @@ onUnmounted(() => {
         <button type="button" class="filter-btn" :class="{ active: adminTab === 'prices' }" @click="adminTab = 'prices'">مدیریت قیمت‌ها</button>
       </div>
       <button type="button" class="logout-btn" @click="logout">خروج</button>
+    </div>
+
+    <div v-if="notifyState === 'default' || notifyState === 'denied'" class="notify-banner">
+      <p v-if="notifyState === 'denied'">
+        اعلان مرورگر مسدود است. از تنظیمات سایت اجازه بدهید تا سفارش‌های جدید در پس‌زمینه هم خبر داده شوند.
+      </p>
+      <p v-else>
+        برای هشدار صوتی و اعلان وقتی پنل در پس‌زمینه است، یک‌بار روی دکمه بزنید.
+      </p>
+      <button v-if="notifyState !== 'denied'" type="button" @click="enableAlerts">فعال‌سازی هشدار سفارش</button>
     </div>
 
     <DailyStock v-if="adminTab === 'stock'" />
