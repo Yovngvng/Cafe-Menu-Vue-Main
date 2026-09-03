@@ -1,18 +1,18 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { supabase } from "../../services/supabase.js";
+import { supabase, startSessionKeepAlive, refreshAdminSession } from "../../services/supabase.js";
 import { getOrders, updateOrderStatus, deleteOrder } from "../../services/orders.js";
 import { signOutAdmin } from "../../services/auth.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { playBeep } from "../../utils/playBeep.js";
-import { alertNewOrder, notificationPermission, registerAdminAlertsWorker, requestAlertPermission } from "../../utils/adminAlerts.js";
+import { alertNewOrder, isIOS, isStandaloneDisplay, notificationPermission, registerAdminAlertsWorker, requestAlertPermission } from "../../utils/adminAlerts.js";
 import { extractOrderTax, productLines } from "../../utils/orderTotals.js";
 import {
   STATUS,
-  STATUS_PRIORITY,
   canonicalStatus,
   nextStatus,
+  isOpenStatus,
   orderTimestamp,
   cafeDayKey,
   isCafeDay,
@@ -34,7 +34,9 @@ const actionMessage = ref("");
 const loading = ref(true);
 const showBestSellers = ref(false);
 const adminTab = ref("orders");
-const notifyState = ref("unsupported");
+const notifyState = ref(notificationPermission() === "granted" ? "granted" : "default");
+const showAlertSetup = computed(() => notifyState.value !== "granted");
+const iosHint = computed(() => isIOS() && !isStandaloneDisplay());
 
 const todayKey = computed(() => cafeDayKey(clock.value));
 const isTodayView = computed(() => selectedDayKey.value === todayKey.value);
@@ -59,7 +61,7 @@ const visibleOrders = computed(() =>
 const todayOrders = computed(() => visibleOrders.value.length);
 
 const waitingOrders = computed(
-  () => visibleOrders.value.filter((order) => canonicalStatus(order.status) === STATUS.WAITING).length
+  () => visibleOrders.value.filter((order) => isOpenStatus(order.status)).length
 );
 
 const readyOrders = computed(
@@ -127,11 +129,22 @@ function flashAction(text) {
 async function loadOrders() {
   const result = await getOrders();
   if (!result.ok) {
-    flashAction(result.message);
-    if (result.error?.code === "PGRST301" || String(result.error?.message || "").includes("JWT")) {
+    const jwtIssue =
+      result.error?.code === "PGRST301" || String(result.error?.message || "").includes("JWT");
+    if (jwtIssue) {
+      const session = await refreshAdminSession();
+      if (session) {
+        const retry = await getOrders();
+        if (retry.ok) {
+          orders.value = retry.orders;
+          return;
+        }
+      }
       await signOutAdmin();
       router.replace("/admin/login");
+      return;
     }
+    flashAction(result.message);
     return;
   }
   orders.value = result.orders;
@@ -161,18 +174,12 @@ const byNewestFirst = computed(() => {
 
 const latestThree = computed(() => byNewestFirst.value.slice(0, 3));
 
-const otherOrders = computed(() => {
-  const rest = byNewestFirst.value.slice(3);
-  const filtered =
-    currentFilter.value === "all"
-      ? rest
-      : rest.filter((o) => canonicalStatus(o.status) === currentFilter.value);
-  return [...filtered].sort((a, b) => {
-    const pa = STATUS_PRIORITY[canonicalStatus(a.status)] ?? 0;
-    const pb = STATUS_PRIORITY[canonicalStatus(b.status)] ?? 0;
-    if (pa !== pb) return pa - pb;
-    return orderTimestamp(a) - orderTimestamp(b);
-  });
+const filteredOrders = computed(() => {
+  if (currentFilter.value === "all") return byNewestFirst.value;
+  if (currentFilter.value === STATUS.WAITING) {
+    return byNewestFirst.value.filter((order) => isOpenStatus(order.status));
+  }
+  return byNewestFirst.value.filter((order) => canonicalStatus(order.status) === currentFilter.value);
 });
 
 async function changeStatus(order) {
@@ -214,11 +221,13 @@ async function logout() {
 
 let channel;
 let clockTimer;
+let stopKeepAlive;
 
 onMounted(async () => {
   window.addEventListener("keydown", onAdminKeydown);
   notifyState.value = notificationPermission();
   registerAdminAlertsWorker();
+  stopKeepAlive = startSessionKeepAlive();
   await loadOrders();
   loading.value = false;
   let lastDayKey = cafeDayKey(clock.value);
@@ -259,6 +268,7 @@ onUnmounted(() => {
     supabase.removeChannel(channel);
   }
   if (clockTimer) clearInterval(clockTimer);
+  if (stopKeepAlive) stopKeepAlive();
 });
 </script>
 
@@ -277,14 +287,17 @@ onUnmounted(() => {
       <button type="button" class="logout-btn" @click="logout">خروج</button>
     </div>
 
-    <div v-if="notifyState === 'default' || notifyState === 'denied'" class="notify-banner">
+    <div v-if="showAlertSetup" class="notify-banner">
       <p v-if="notifyState === 'denied'">
         اعلان مرورگر مسدود است. از تنظیمات سایت اجازه بدهید تا سفارش‌های جدید در پس‌زمینه هم خبر داده شوند.
+      </p>
+      <p v-else-if="iosHint">
+        روی آیفون، این دکمه را بزنید تا صدا فعال شود. برای اعلان سیستم، پنل را از سافاری با «افزودن به صفحه اصلی» نصب کنید و از همان میانبر باز کنید.
       </p>
       <p v-else>
         برای هشدار صوتی و اعلان وقتی پنل در پس‌زمینه است، یک‌بار روی دکمه بزنید.
       </p>
-      <button v-if="notifyState !== 'denied'" type="button" @click="enableAlerts">فعال‌سازی هشدار سفارش</button>
+      <button type="button" @click="enableAlerts">فعال‌سازی هشدار سفارش</button>
     </div>
 
     <DailyStock v-if="adminTab === 'stock'" />
@@ -310,34 +323,34 @@ onUnmounted(() => {
       </label>
     </div>
 
-    <h1>مدیریت سفارش ها</h1>
+    <h1>سفارش‌ها</h1>
     <p v-if="!isTodayView" class="report-heading">گزارش {{ selectedDayKey }}</p>
     <p v-if="actionMessage" class="msg-error">{{ actionMessage }}</p>
     <p v-if="loading" class="admin-loading">در حال بارگذاری...</p>
 
     <div class="dashboard">
       <div class="dashboard-card">
-        <h3>سفارش ها 📦</h3>
+        <h3>سفارش‌ها</h3>
         <span>{{ todayOrders }}</span>
       </div>
 
       <div class="dashboard-card">
-        <h3>فروش 💰</h3>
+        <h3>فروش</h3>
         <span>{{ formatPrice(todayIncome) }}</span>
       </div>
 
       <div class="dashboard-card waiting">
-        <h3>در انتظار 🟡</h3>
+        <h3>باز</h3>
         <span>{{ waitingOrders }}</span>
       </div>
 
-      <div class="dashboard-card ready">
-        <h3>آماده 🟢</h3>
+      <div v-if="readyOrders" class="dashboard-card ready">
+        <h3>آمادهٔ قبلی</h3>
         <span>{{ readyOrders }}</span>
       </div>
 
       <div class="dashboard-card">
-        <h3>تحویل شده ✅</h3>
+        <h3>تحویل‌شده</h3>
         <span>{{ doneOrders }}</span>
       </div>
 
@@ -353,7 +366,7 @@ onUnmounted(() => {
 
     <button id="clearDoneOrders" @click="clearDoneOrders">حذف سفارش های تحویل داده شده</button>
 
-    <h2>۳ سفارش آخر</h2>
+    <h2>آخرین سفارش‌ها</h2>
     <OrderCard
       v-for="order in latestThree"
       :key="order.id"
@@ -363,7 +376,7 @@ onUnmounted(() => {
       @delete="handleDelete"
     />
 
-    <h2>سایر سفارش ها</h2>
+    <h2>همه سفارش‌های این روز</h2>
     <div class="admin-filters">
       <button
         type="button"
@@ -380,19 +393,14 @@ onUnmounted(() => {
       <button
         type="button"
         class="filter-btn"
-        :class="{ active: currentFilter === STATUS.READY }"
-        @click="currentFilter = STATUS.READY"
-      >آماده شد</button>
-      <button
-        type="button"
-        class="filter-btn"
         :class="{ active: currentFilter === STATUS.DONE }"
         @click="currentFilter = STATUS.DONE"
       >تحویل داده شد</button>
     </div>
 
+    <p v-if="!filteredOrders.length" class="admin-loading">سفارشی در این وضعیت نیست.</p>
     <OrderCard
-      v-for="order in otherOrders"
+      v-for="order in filteredOrders"
       :key="order.id"
       :order="order"
       :daily-number="dailyNumbers[order.id]"

@@ -1,4 +1,4 @@
-/** Vanilla 3-step kitchen statuses. */
+/** Kitchen statuses. UI completes an order in one tap. */
 export const STATUS = {
   WAITING: "در انتظار",
   READY: "آماده شد",
@@ -20,16 +20,17 @@ export function canonicalStatus(status) {
 
 export function nextStatus(status) {
   const current = canonicalStatus(status);
-  if (current === STATUS.WAITING) return STATUS.READY;
-  if (current === STATUS.READY) return STATUS.DONE;
+  if (current === STATUS.WAITING || current === STATUS.READY) return STATUS.DONE;
   return null;
 }
 
-export function nextStatusLabel(status) {
-  const next = nextStatus(status);
-  if (next === STATUS.READY) return "آماده شد";
-  if (next === STATUS.DONE) return "تحویل داده شد";
-  return "تحویل داده شد";
+export function nextStatusLabel() {
+  return "تحویل شد";
+}
+
+export function isOpenStatus(status) {
+  const current = canonicalStatus(status);
+  return current === STATUS.WAITING || current === STATUS.READY;
 }
 
 export const STATUS_PRIORITY = {

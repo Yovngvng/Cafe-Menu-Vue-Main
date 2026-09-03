@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { extractOrderTax, extractHolderRequested, extractHolderFee, productLines } from "../../utils/orderTotals.js";
-import { canonicalStatus, nextStatus, nextStatusLabel, STATUS, orderTimestamp } from "../../utils/orderStatus.js";
+import { canonicalStatus, nextStatus, nextStatusLabel, STATUS, isOpenStatus, orderTimestamp } from "../../utils/orderStatus.js";
 
 const props = defineProps({
   order: { type: Object, required: true },
@@ -39,7 +39,7 @@ const waitedMinutes = computed(() => {
   return Math.floor((Date.now() - createdAt.value) / 60000);
 });
 
-const isUrgent = computed(() => status.value === STATUS.WAITING && waitedMinutes.value >= 10);
+const isUrgent = computed(() => isOpenStatus(props.order.status) && waitedMinutes.value >= 10);
 
 const timeLabel = computed(() => {
   if (!createdAt.value) return "";

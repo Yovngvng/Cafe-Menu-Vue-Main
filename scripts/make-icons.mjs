@@ -20,4 +20,24 @@ await sharp(src).resize(32, 32, { fit: "cover" }).png().toFile(path.join(outDir,
 await sharp(src).resize(180, 180, { fit: "cover" }).png().toFile(path.join(outDir, "apple-touch-icon.png"));
 await sharp(src).resize(192, 192, { fit: "cover" }).png().toFile(path.join(outDir, "icon-192.png"));
 await sharp(src).resize(512, 512, { fit: "cover" }).png().toFile(path.join(outDir, "icon-512.png"));
+
+async function brandedIcon(size, file, background) {
+  const inner = Math.round(size * 0.72);
+  const logo = await sharp(src).resize(inner, inner, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+  await sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 4,
+      background,
+    },
+  })
+    .composite([{ input: logo, gravity: "center" }])
+    .png()
+    .toFile(path.join(outDir, file));
+}
+
+await brandedIcon(180, "admin-apple-touch-icon.png", "#d4af37");
+await brandedIcon(192, "admin-icon-192.png", "#d4af37");
+await brandedIcon(512, "admin-icon-512.png", "#d4af37");
 console.log("icons written from", path.basename(src));

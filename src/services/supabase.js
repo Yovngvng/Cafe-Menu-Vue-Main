@@ -38,6 +38,37 @@ export async function getSession() {
   return data.session;
 }
 
+export async function refreshAdminSession() {
+  try {
+    const current = await getSession();
+    if (!current) return null;
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) return current;
+    return data.session || current;
+  } catch (e) {
+    return getSession();
+  }
+}
+
+export function startSessionKeepAlive() {
+  let timer;
+  const tick = () => {
+    refreshAdminSession();
+  };
+  timer = setInterval(tick, 4 * 60 * 1000);
+  const onVisible = () => {
+    if (document.visibilityState === "visible") tick();
+  };
+  document.addEventListener("visibilitychange", onVisible);
+  window.addEventListener("focus", tick);
+  tick();
+  return () => {
+    clearInterval(timer);
+    document.removeEventListener("visibilitychange", onVisible);
+    window.removeEventListener("focus", tick);
+  };
+}
+
 export async function getUser() {
   const { data } = await supabase.auth.getUser();
   return data.user || null;

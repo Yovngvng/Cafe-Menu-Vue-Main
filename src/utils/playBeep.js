@@ -1,7 +1,6 @@
-/** Loud two-tone kitchen alert. Queues until the first user gesture unlocks audio. */
+/** Kitchen chime. Queues until the first user gesture unlocks audio. */
 
 let audioCtx = null;
-let unlocked = false;
 let queued = 0;
 let listenersBound = false;
 
@@ -16,32 +15,29 @@ function context() {
   return audioCtx;
 }
 
-function tone(ctx, frequency, start, duration) {
+function ping(ctx, frequency, start, duration, type = "sine", peak = 0.9) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
-  osc.type = "square";
+  osc.type = type;
   osc.frequency.setValueAtTime(frequency, start);
-  filter.type = "highpass";
-  filter.frequency.setValueAtTime(400, start);
   gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(0.95, start + 0.018);
-  gain.gain.setValueAtTime(0.95, start + duration * 0.55);
+  gain.gain.exponentialRampToValueAtTime(peak, start + 0.012);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-  osc.connect(filter);
-  filter.connect(gain);
+  osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start(start);
-  osc.stop(start + duration + 0.03);
+  osc.stop(start + duration + 0.02);
 }
 
 function playNow() {
   const ctx = context();
   if (!ctx || ctx.state !== "running") return false;
   const t = ctx.currentTime + 0.01;
-  tone(ctx, 880, t, 0.28);
-  tone(ctx, 1397, t + 0.32, 0.38);
-  tone(ctx, 880, t + 0.78, 0.22);
+  ping(ctx, 523.25, t, 0.18, "triangle", 0.85);
+  ping(ctx, 659.25, t + 0.14, 0.2, "triangle", 0.9);
+  ping(ctx, 783.99, t + 0.3, 0.28, "sine", 0.95);
+  ping(ctx, 1046.5, t + 0.48, 0.55, "sine", 0.92);
+  ping(ctx, 1318.5, t + 0.52, 0.22, "triangle", 0.55);
   return true;
 }
 
@@ -59,9 +55,8 @@ export async function unlockAudio() {
   } catch (e) {
     console.warn("audio unlock failed", e);
   }
-  unlocked = ctx.state === "running";
-  if (unlocked) flushQueue();
-  return unlocked;
+  if (ctx.state === "running") flushQueue();
+  return ctx.state === "running";
 }
 
 export function playBeep() {
@@ -78,12 +73,13 @@ export function playBeep() {
 export function bindAudioUnlock() {
   if (listenersBound || typeof window === "undefined") return;
   listenersBound = true;
-  const onInteract = () => {
-    unlockAudio();
-  };
+  const onInteract = () => unlockAudio();
   window.addEventListener("pointerdown", onInteract, { capture: true });
   window.addEventListener("keydown", onInteract, { capture: true });
   window.addEventListener("touchstart", onInteract, { capture: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") unlockAudio();
+  });
 }
 
 if (typeof window !== "undefined") {

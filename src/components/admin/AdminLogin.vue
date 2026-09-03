@@ -7,7 +7,7 @@ const router = useRouter();
 const route = useRoute();
 const email = ref("");
 const password = ref("");
-const rememberMe = ref(false);
+const rememberMe = ref(true);
 const error = ref("");
 const loading = ref(false);
 
@@ -51,7 +51,7 @@ async function tryLogin() {
     >
     <label class="remember-row">
       <input type="checkbox" v-model="rememberMe" />
-      <span>مرا به خاطر بسپار</span>
+      <span>مرا به خاطر بسپار (پیشنهادی برای پنل آشپزخانه)</span>
     </label>
     <button @click="tryLogin" :disabled="loading">
       {{ loading ? "در حال ورود..." : "ورود" }}
