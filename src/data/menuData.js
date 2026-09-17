@@ -38,26 +38,29 @@ const rawMenu = [
     items: [
       {
         name: "چای ساده",
+        image: "images/Chaii.jpg",
+        description: "چایی سیاه",
+        featured: true,
         sizes: [
-          { size: "تک نفره", price: 100 },
-          { size: "دو نفره", price: 120 },
-          { size: "چهار نفره", price: 160 },
+          { size: "تک نفره", price: 160 },
+          { size: "دو نفره", price: 200 },
+          { size: "چهار نفره", price: 240 },
         ],
       },
       {
         name: "چای زعفران",
         sizes: [
-          { size: "تک نفره", price: 200 },
-          { size: "دو نفره", price: 230 },
+          { size: "تک نفره", price: 250 },
+          { size: "دو نفره", price: 280 },
         ],
       },
-      { name: "چای هل", price: "180" },
-      { name: "چای سبز", price: "130" },
-      { name: "چای آویشن کوهی", price: "200" },
-      { name: "چای تیبگ با نبات", price: "80" },
-      { name: "چای خواب", price: "180" },
-      { name: "چای میوه‌ای", price: "180" },
-      { name: "چای فلفل", price: "160" },
+      { name: "چای هل", price: "220" },
+      { name: "چای سبز", price: "170" },
+      { name: "چای آویشن کوهی", price: "230" },
+      { name: "چای تیبگ با نبات", price: "100" },
+      { name: "چای خواب", price: "230" },
+      { name: "چای میوه‌ای", price: "220" },
+      { name: "چای فلفل", price: "200" },
     ],
   },
 
@@ -79,13 +82,7 @@ const rawMenu = [
   {
     category: "بار گرم",
     items: [
-      {
-        name: "لاته",
-        price: "220",
-        image: "images/Latte.jpg",
-        description: "قهوه, شیر داغ و فوم ملایم",
-        featured: true,
-      },
+      { name: "لاته", price: "220" },
       { name: "لاته ژوان", price: "260" },
       { name: "کاپوچینو", price: "200" },
       { name: "کاپوچینو ژوان", price: "240" },
@@ -103,15 +100,9 @@ const rawMenu = [
         price: "220",
         image: "images/Afogato.jpg",
         description: "بستنی و دبل اسپرسو",
-        featured: true,
+        featured: true
       },
-      {
-        name: "کاپوچینو پودری",
-        price: "160",
-        image: "images/Cuppochino Podri.jpg",
-        description: "کاپوچینو پودری ۲۳۰ سی سی",
-        featured: true,
-      },
+      { name: "کاپوچینو پودری", price: "160" },
       { name: "شیر نسکافه", price: "160" },
       { name: "نسکافه", price: "150" },
       { name: "سیروپ", price: "40" },
@@ -125,17 +116,22 @@ const rawMenu = [
       { name: "وایت چاکلت", price: "200" },
       { name: "دارک چاکلت", price: "200" },
       { name: "بینک چاکلت", price: "210" },
-      { name: "مارشملو چاکلت", price: "185" },
-      { name: "هات چاپلت", price: "210" },
-
       {
-        name: "چای ماسالا",
-        price: "190",
-        image: "images/Masala.jpg",
-        description: "دارای ادویه, گرم, انرژی بخش",
-        featured: true,
+        name: "مارشملو چاکلت",
+        price: "185",
+        image: "images/Marshmelo Chocolate.jpg",
+        description: "هات چاکلت به همراه مارشملو",
+        featured: true
+      },
+      {
+        name: "هات چاپلت",
+        price: "210",
+        image: "images/Hot Chaplet.jpg",
+        description: "هات چاکلت همراه با چیپلت",
+        featured: true
       },
 
+      { name: "چای ماسالا", price: "190" },
       { name: "چای کرک زعفرانی", price: "200" },
       { name: "چای کرک هل", price: "200" },
       { name: "چای کرک ماسالا", price: "190" },
@@ -155,23 +151,47 @@ const rawMenu = [
       {
         name: "شیک نوتلا",
         price: "380",
-        image: "images/Shake Nutella.jpg",
+        image: "images/Shake Nuttella.jpg",
         description: "بستنی وانیل, نوتلا, شیر, موز",
-        featured: true,
+        featured: true
       },
-      { name: "شیک کوکی گردو", price: "310" },
+      {
+        name: "شیک کوکی گردو",
+        price: "310",
+        image: "images/Shake cookie Gerdo.jpg",
+        description: "بستنی کره گردو, دارچین, شیر, کوکی",
+        featured: true
+      },
       { name: "شیک بنانا نات", price: "310" },
-      { name: "شیک اسنیکرز", price: "320" },
+      {
+        name: "شیک اسنیکرز",
+        price: "320",
+        image: "images/Shake Sneakers.jpg",
+        description: "بستنی شکلاتی, کره بادام زمینی, شیر, بادام زمینی",
+        featured: true
+      },
       { name: "شیک چاکلت مینت", price: "310" },
       { name: "شیک بادام زمینی موز", price: "320" },
       { name: "شیک نسکافه بیسکوییت", price: "310" },
-      { name: "شیک لوتوس", price: "310" },
+      {
+        name: "شیک لوتوس",
+        price: "310",
+        image: "images/Shake Lotus.jpg",
+        description: "بستنی وانیل, کره لوتوس, شیر, موز",
+        featured: true
+      },
       { name: "شیک میکس بری", price: "290" },
       { name: "شیک کارامل کیک", price: "320" },
       { name: "شیک دارک", price: "380" },
       { name: "شیک زرشک", price: "285" },
       { name: "شیک قهوه", price: "295" },
-      { name: "شیک توت فرنگی", price: "310" },
+      {
+        name: "شیک توت فرنگی",
+        price: "310",
+        image: "images/Shake straberry.jpg",
+        description: "بستنی توت فرنگی و وانیل, توت فرنگی, شیر",
+        featured: true
+      },
       { name: "شیک سیگنیچر", price: "310" },
     ],
   },
@@ -179,11 +199,35 @@ const rawMenu = [
   {
     category: "نوشیدنی سرد",
     items: [
-      { name: "موهیتو", price: "230" },
-      { name: "رد موهیتو", price: "250" },
+      {
+        name: "موهیتو",
+        price: "230",
+        image: "images/Mojito.jpg",
+        description: "نعنا و لیمو",
+        featured: true
+      },
+      {
+        name: "رد موهیتو",
+        price: "250",
+        image: "images/Red Mojito.jpg",
+        description: "نعنا و لیمو و توت فرنگی",
+        featured: true
+      },
       { name: "لیموناد", price: "190" },
-      { name: "بری نات", price: "240" },
-      { name: "بلو هاوایی", price: "250" },
+      { 
+        name: "بری نات",
+        price: "240",
+        image: "images/Berry Nut.jpg",
+        description: "آب پرتقال، توت فرنگی، سیروپ نارگیل",
+        featured: true
+      },
+      {
+        name: "بلو هاوایی",
+        price: "250",
+        image: "images/Blue Hawaii.jpg",
+        description: "آب آناناس، شیر یا سیروپ نارگیل",
+        featured: true
+      },
       { name: "شیر سرد", price: "120" },
       { name: "شیرموز", price: "300" },
       { name: "پیناکولادا", price: "240" },
@@ -198,14 +242,7 @@ const rawMenu = [
     items: [
       { name: "آب سیب", item_key: "آبمیوه/آب-سیب", price: "250" },
       { name: "آب پرتقال", item_key: "آبمیوه/آب-پرتقال", price: "290" },
-      {
-        name: "آب هویج",
-        item_key: "آبمیوه/آب-هویج",
-        price: "160",
-        image: "images/Ab Havij.jpg",
-        description: "۴۰۰ سی سی آب هویج طبیعی",
-        featured: true,
-      },
+      { name: "آب هویج", item_key: "آبمیوه/آب-هویج", price: "160" },
       { name: "آب انار", item_key: "آبمیوه/آب-انار", price: "260" },
       { name: "آب هندوانه", item_key: "آبمیوه/آب-هندوانه", price: "220" },
       { name: "آب طالبی", item_key: "آبمیوه/آب-طالبی", price: "240" },
@@ -229,23 +266,53 @@ const rawMenu = [
   {
     category: "بار سرد",
     items: [
-      { name: "آیس لاته", price: "230" },
-      { name: "آیس لاته ژوان", price: "250" },
       {
-        name: "آیس آمریکانو",
-        price: "190",
-        image: "images/Ice Amerikano.jpg",
-        description: "قهوه, آب و یخ",
-        featured: true,
+        name: "آیس لاته",
+        price: "230",
+        image: "images/Ice Latte.jpg",
+        description: "قهوه, شیر سرد",
+        featured: true
       },
+      {
+        name: "آیس لاته ژوان",
+        price: "250",
+        image: "images/Ice Latte.jpg",
+        description: "قهوه عربیکا تک خواستگاهی, شیر سرد",
+        featured: false
+      },
+      { name: "آیس آمریکانو", price: "190" },
       { name: "آیس آمریکانو ژوان", price: "210" },
-      { name: "آیس اسپیرولینا", price: "310" },
+      {
+        name: "آیس اسپیرولینا",
+        price: "310",
+        image: "images/Ice Sprollina.jpg",
+        description: "اسپرولینا و شیر سرد",
+        featured: true
+      },
       { name: "آیس ماچا", price: "280" },
-      { name: "آیس ماچا بری", price: "300" },
+      {
+        name: "آیس ماچا بری",
+        price: "300",
+        image: "images/Ice Machaberry.jpg",
+        description: "ماچا، توت فرنگی، شیر",
+        featured: true
+      },
       { name: "آیس ماکیاتو", price: "200" },
-      { name: "آیس موکا", price: "240" },
+      {
+        name: "آیس موکا",
+        price: "240",
+        image: "images/Ice Mooka.jpg",
+        description: "قهوه, شیر سرد، شکلات آب شده",
+        featured: true
+      },
       { name: "کوکو کافی", price: "190" },
-      { name: "اورنج کافی", price: "210" },
+      {
+        name: "اورنج کافی",
+        price: "210",
+        image: "images/Orange Coffee.jpg",
+        description: "شات دبل اسپرسو، آب پرتقال",
+        featured: true
+      },
       { name: "کن هیلو", price: "240" },
       { name: "سیروپ", price: "40" },
     ],
@@ -254,18 +321,30 @@ const rawMenu = [
   {
     category: "اسموتی",
     items: [
-      { name: "اسموتی منگو پیچ", price: "250" },
-      { name: "اسموتی بری", price: "240" },
       {
-        name: "اسموتی منگو بری",
+        name: "اسموتی منگو پیچ",
         price: "250",
-        image: "images/Mango Berry.jpg",
-        description: "انبه و توت فرنگی یخ زده",
-        featured: true,
+        image: "images/Smoothie Mango Pitch.jpg",
+        description: "انبه و هلو",
+        featured: true
       },
+      {
+        name: "اسموتی بری",
+        price: "240",
+        image: "images/Smoothie Berry.jpg",
+        description: "توت فرنگی به همراه طعم های ترش",
+        featured: true
+      },
+      { name: "اسموتی منگو بری", price: "250" },
       { name: "اسموتی گرین", price: "240" },
       { name: "اسموتی هندوانه", price: "240" },
-      { name: "اسموتی اورنج بری", price: "240" },
+      {
+        name: "اسموتی اورنج بری",
+        price: "240",
+        image: "images/Orange Berry.jpg",
+        description: "توت فرنگی و پرتقال",
+        featured: true
+      },
       { name: "رزالیا", price: "200" },
       { name: "ممیسابو", price: "200" },
       { name: "اسموتی گرینویچ", price: "210" },
@@ -277,7 +356,13 @@ const rawMenu = [
     items: [
       { name: "فراپه کلاسیک", price: "240" },
       { name: "فراپه کوکو", price: "260" },
-      { name: "فراپه تیرامیسو نعنا", price: "260" },
+      {
+        name: "فراپه تیرامیسو نعنا",
+        price: "260",
+        image: "images/Frappe Tiramisoo Nana.jpg",
+        description: "بستنی براوونی، شات اسپرسو، نعنا، شکلات",
+        featured: true
+      },
       { name: "فراپه کوکی نات", price: "250" },
       { name: "چاکلت بری فراپه", price: "270" },
     ],
@@ -404,14 +489,14 @@ const rawMenu = [
       {
         name: "ساندویچ بیکن بوقلمون",
         price: "464",
+        image: "images/Baken Boghalamon.jpg",
+        description: "نون چاباتا، بیکن بوقلمون، ریحان، گوجه، پنیر گودا",
+        featured: true,
         optionalTopping: { name: "قارچ و پنیر", price: 80 },
       },
       {
         name: "ساندویچ بیکن گوشت",
         price: "456",
-        image: "images/Baken Gosht.jpg",
-        description: " بیکن گوشت, گوجه, ریحان, نون چاباتا",
-        featured: true,
         optionalTopping: { name: "قارچ و پنیر", price: 80 },
       },
       {
@@ -435,9 +520,6 @@ const rawMenu = [
       },
       {
         name: "پاستا آلفردو",
-        image: "images/Pasta Alfredo.jpg",
-        description: "۱۵۰ گرم مرغ, پنه, قارچ, جعفری",
-        featured: true,
         sizes: [
           { size: "تک نفره", price: 682 },
           { size: "دو نفره", price: 784 },
@@ -480,6 +562,9 @@ const rawMenu = [
       },
       {
         name: "سالاد سزار",
+        image: "images/Salad Sezar.jpg",
+        description: "فیله مرغ، کاهو، زیتون، نون سیر، گوجه و سس سزار",
+        featured: true
         sizes: [
           { size: "تک نفره", price: 620 },
           { size: "دو نفره", price: 860 },
