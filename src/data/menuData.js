@@ -98,7 +98,13 @@ const rawMenu = [
       { name: "کافی نات", price: "200" },
       { name: "ماکیاتو", price: "150" },
       { name: "کورتادو", price: "150" },
-      { name: "آفوگاتو", price: "220" },
+      { 
+        name: "آفوگاتو",
+        price: "220",
+        image: "images/Afogato.jpg",
+        description: "بستنی و دبل اسپرسو",
+        featured: true,
+      },
       {
         name: "کاپوچینو پودری",
         price: "160",
