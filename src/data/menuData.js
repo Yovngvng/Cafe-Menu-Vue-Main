@@ -564,7 +564,7 @@ const rawMenu = [
         name: "سالاد سزار",
         image: "images/Salad Sezar.jpg",
         description: "فیله مرغ، کاهو، زیتون، نون سیر، گوجه و سس سزار",
-        featured: true
+        featured: true,
         sizes: [
           { size: "تک نفره", price: 620 },
           { size: "دو نفره", price: 860 },
