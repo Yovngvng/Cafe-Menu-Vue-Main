@@ -421,7 +421,7 @@ const rawMenu = [
       { name: "کیک شکلات خیس", item_key: "کیک-و-دسر/کیک-شکلات-خیس", price: "290" },
       { name: "تیرامیسو", item_key: "کیک-و-دسر/تیرامیسو", price: "280" },
       { name: "گاتا", item_key: "کیک-و-دسر/گاتا", price: "270" },
-      { name: "وافل ویژه", item_key: "کیک-و-دسر/وافل-ویژه", price: "430", image: "/images/waffel.jpg" },
+      { name: "وافل ویژه", item_key: "کیک-و-دسر/وافل-ویژه", price: "430", image: "images/waffel.jpg" },
       { name: "چیزکیک شاتوت", item_key: "کیک-و-دسر/چیزکیک-شاتوت", price: "270" },
       { name: "چیزکیک نیویورکی", item_key: "کیک-و-دسر/کیک-نیویورکی", price: "280" },
       { name: "چیزکیک لوتوس", item_key: "کیک-و-دسر/چیزکیک-لوتوس", price: "260" },
@@ -534,7 +534,7 @@ const rawMenu = [
       },
       {
         name: "سیب زمینی ساده",
-        image: "/images/sib-sade.jpg",
+        image: "images/sib-sade.jpg",
         featured: false,
         sizes: [
           { size: "تک نفره", price: 320 },
