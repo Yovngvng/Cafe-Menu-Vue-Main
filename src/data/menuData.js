@@ -121,7 +121,7 @@ const rawMenu = [
         price: "185",
         image: "images/Marshmelo Chocolate.jpg",
         description: "هات چاکلت به همراه مارشملو",
-        featured: true
+        featured: false
       },
       {
         name: "هات چاپلت",
@@ -160,7 +160,7 @@ const rawMenu = [
         price: "310",
         image: "images/Shake cookie Gerdo.jpg",
         description: "بستنی کره گردو, دارچین, شیر, کوکی",
-        featured: true
+        featured: false
       },
       { name: "شیک بنانا نات", price: "310" },
       {
@@ -168,7 +168,7 @@ const rawMenu = [
         price: "320",
         image: "images/Shake Sneakers.jpg",
         description: "بستنی شکلاتی, کره بادام زمینی, شیر, بادام زمینی",
-        featured: true
+        featured: false
       },
       { name: "شیک چاکلت مینت", price: "310" },
       { name: "شیک بادام زمینی موز", price: "320" },
@@ -178,7 +178,7 @@ const rawMenu = [
         price: "310",
         image: "images/Shake Lotus.jpg",
         description: "بستنی وانیل, کره لوتوس, شیر, موز",
-        featured: true
+        featured: false
       },
       { name: "شیک میکس بری", price: "290" },
       { name: "شیک کارامل کیک", price: "320" },
@@ -190,7 +190,7 @@ const rawMenu = [
         price: "310",
         image: "images/Shake straberry.jpg",
         description: "بستنی توت فرنگی و وانیل, توت فرنگی, شیر",
-        featured: true
+        featured: false
       },
       { name: "شیک سیگنیچر", price: "310" },
     ],
@@ -204,14 +204,14 @@ const rawMenu = [
         price: "230",
         image: "images/Mojito.jpg",
         description: "نعنا و لیمو",
-        featured: true
+        featured: false
       },
       {
         name: "رد موهیتو",
         price: "250",
         image: "images/Red Mojito.jpg",
         description: "نعنا و لیمو و توت فرنگی",
-        featured: true
+        featured: false
       },
       { name: "لیموناد", price: "190" },
       { 
@@ -226,7 +226,7 @@ const rawMenu = [
         price: "250",
         image: "images/Blue Hawaii.jpg",
         description: "آب آناناس، شیر یا سیروپ نارگیل",
-        featured: true
+        featured: false
       },
       { name: "شیر سرد", price: "120" },
       { name: "شیرموز", price: "300" },
@@ -287,7 +287,7 @@ const rawMenu = [
         price: "310",
         image: "images/Ice Sprollina.jpg",
         description: "اسپرولینا و شیر سرد",
-        featured: true
+        featured: false
       },
       { name: "آیس ماچا", price: "280" },
       {
@@ -303,7 +303,7 @@ const rawMenu = [
         price: "240",
         image: "images/Ice Mooka.jpg",
         description: "قهوه, شیر سرد، شکلات آب شده",
-        featured: true
+        featured: false
       },
       { name: "کوکو کافی", price: "190" },
       {
@@ -311,7 +311,7 @@ const rawMenu = [
         price: "210",
         image: "images/Orange Coffee.jpg",
         description: "شات دبل اسپرسو، آب پرتقال",
-        featured: true
+        featured: false
       },
       { name: "کن هیلو", price: "240" },
       { name: "سیروپ", price: "40" },
@@ -343,7 +343,7 @@ const rawMenu = [
         price: "240",
         image: "images/Orange Berry.jpg",
         description: "توت فرنگی و پرتقال",
-        featured: true
+        featured: false
       },
       { name: "رزالیا", price: "200" },
       { name: "ممیسابو", price: "200" },
@@ -361,7 +361,7 @@ const rawMenu = [
         price: "260",
         image: "images/Frappe Tiramisoo Nana.jpg",
         description: "بستنی براوونی، شات اسپرسو، نعنا، شکلات",
-        featured: true
+        featured: false
       },
       { name: "فراپه کوکی نات", price: "250" },
       { name: "چاکلت بری فراپه", price: "270" },
@@ -534,7 +534,8 @@ const rawMenu = [
       },
       {
         name: "سیب زمینی ساده",
-        image: /images/sib-sade.jpg",
+        image: "/images/sib-sade.jpg",
+        featured: false,
         sizes: [
           { size: "تک نفره", price: 320 },
           { size: "دو نفره", price: 420 },
@@ -565,7 +566,7 @@ const rawMenu = [
         name: "سالاد سزار",
         image: "images/Salad Sezar.jpg",
         description: "فیله مرغ، کاهو، زیتون، نون سیر، گوجه و سس سزار",
-        featured: true,
+        featured: false,
         sizes: [
           { size: "تک نفره", price: 620 },
           { size: "دو نفره", price: 860 },
